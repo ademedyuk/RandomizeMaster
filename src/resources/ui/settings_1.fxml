@@ -5,6 +5,7 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.Pane?>
@@ -56,7 +57,7 @@
       <Pane prefHeight="471.0" prefWidth="368.0">
          <children>
             <TextField fx:id="input_info" layoutX="165.0" layoutY="75.0" prefHeight="31.0" prefWidth="347.0" />
-            <Button layoutX="519.0" layoutY="75.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="79.0" text="Обзор" />
+            <Button fx:id="selectListOfPlayersButton" layoutX="519.0" layoutY="75.0" mnemonicParsing="false" onAction="#selectListOfPlayersButtonAction" prefHeight="31.0" prefWidth="79.0" text="Обзор" />
             <Text layoutX="14.0" layoutY="95.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Файл с участниками:">
                <font>
                   <Font name="Playbill" size="15.0" />
@@ -68,15 +69,17 @@
                </font>
             </Text>
             <TextField fx:id="ouput_info" layoutX="165.0" layoutY="117.0" prefHeight="31.0" prefWidth="347.0" />
-            <Button layoutX="519.0" layoutY="117.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="79.0" text="Обзор" />
+            <Button fx:id="selectResultDirectoryButton" layoutX="519.0" layoutY="117.0" mnemonicParsing="false" onAction="#selectResultDirectoryButtonAction" prefHeight="31.0" prefWidth="79.0" text="Обзор" />
             <Text layoutX="120.0" layoutY="179.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Фон:">
                <font>
                   <Font name="Playbill" size="15.0" />
                </font>
             </Text>
             <TextField fx:id="background" layoutX="165.0" layoutY="158.0" prefHeight="31.0" prefWidth="347.0" />
-            <Button layoutX="519.0" layoutY="158.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="79.0" text="Обзор" />
-            <Button fx:id="launch" layoutX="486.0" layoutY="236.0" mnemonicParsing="false" onAction="#handleLaunchButtonAction" prefHeight="31.0" prefWidth="112.0" text="Запуск" />
+            <Button fx:id="selectBackgroundImageButton" layoutX="519.0" layoutY="158.0" mnemonicParsing="false" onAction="#selectBackgroundImageButtonAction" prefHeight="31.0" prefWidth="79.0" text="Обзор" />
+            <Button fx:id="launch" layoutX="486.0" layoutY="296.0" mnemonicParsing="false" onAction="#handleLaunchButtonAction" prefHeight="31.0" prefWidth="112.0" text="Запуск" />
+            <RadioButton fx:id="fullScrene" layoutX="165.0" layoutY="215.0" mnemonicParsing="false" onAction="#handleFullScrene" selected="true" text="Полный экран" />
+            <RadioButton fx:id="inWindow" layoutX="165.0" layoutY="248.0" mnemonicParsing="false" onAction="#handleInWindow" text="В окне" />
          </children>
       </Pane>
   </children>
