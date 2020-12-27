@@ -1,6 +1,5 @@
-package ru.demedyuk.randomize;
+package ru.demedyuk.randomize.controllers;
 
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -14,35 +13,20 @@ import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import ru.demedyuk.randomize.settins.Screen;
+import ru.demedyuk.randomize.AppLaunch;
+import ru.demedyuk.randomize.configuration.screen.Screen;
 
 import java.io.*;
 import java.net.URL;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
-public class SettingsController {
+public class SettingsController implements IController {
 
-    private Stage primaryStage;
+    private Stage appStage;
     private Properties props;
-    private String pathToConfig;
-
-    //меню
-    @FXML
-    private MenuBar menuBar;
-    @FXML
-    private Menu file;
-    @FXML
-    private MenuItem fileNew;
-    @FXML
-    private MenuItem fileOpen;
-    @FXML
-    private MenuItem fileSave;
-    @FXML
-    private MenuItem fileSaveAs;
-    @FXML
-    private MenuItem quitMenuItem;
-    @FXML
-    private MenuItem aboutItem;
+    private static String pathToConfig;
 
     @FXML
     void fileActionHandler(ActionEvent event) {
@@ -50,8 +34,6 @@ public class SettingsController {
 
     @FXML
     void fileNewActionHandler(ActionEvent event) {
-        props = null;
-
         input_info.setText("");
         ouput_info.setText("");
         countOfPlayers.setValue("2 участника");
@@ -62,7 +44,8 @@ public class SettingsController {
         checkProgress();
         usePrivatePhotoAction(new ActionEvent());
 
-        primaryStage.setTitle("Randomize Master");
+        appStage.setTitle("Randomize Master");
+        updateProps();
     }
 
 
@@ -92,10 +75,10 @@ public class SettingsController {
             } catch (IOException io) {
                 io.printStackTrace();
             }
-        }
+        } else
+            fileSaveAsActionHandler(event);
 
     }
-
 
 
     @FXML
@@ -106,9 +89,9 @@ public class SettingsController {
         fileChooser.setTitle("Сохранить конфигурацию");
         fileChooser.setInitialFileName("new.config");
         File selectedFile = fileChooser.showSaveDialog(null);
-        pathToConfig = selectedFile.getPath();
 
         if (selectedFile != null) {
+            pathToConfig = selectedFile.getPath();
             try (OutputStream output = new FileOutputStream(selectedFile)) {
                 Properties prop = this.props;
 
@@ -124,7 +107,7 @@ public class SettingsController {
 
     @FXML
     void quitMenuItemActionHandler(ActionEvent event) {
-        Main.stopApplication();
+        AppLaunch.stopApplication();
     }
 
     private void updateProps() {
@@ -148,6 +131,7 @@ public class SettingsController {
 
     @FXML
     private CheckBox isBalansing;
+
     @FXML
     private CheckBox usePrivatePhoto;
     @FXML
@@ -184,8 +168,11 @@ public class SettingsController {
     @FXML
     private Button launch;
 
-    public void initScene(){
-        countOfPlayers.getItems().addAll( "2 участника",
+    @FXML
+    private ColorPicker textColor;
+
+    public void initScene() {
+        countOfPlayers.getItems().addAll("2 участника",
                 "3 участника",
                 "4 участника",
                 "5 участников",
@@ -197,7 +184,11 @@ public class SettingsController {
         usePrivatePhoto.setSelected(false);
         label_photo.setFill(Paint.valueOf("DBDBDB"));
         messageField.setText("Выберите файл с участниками...");
-        initConfig(null, getClass().getClassLoader().getResource("default.properties").getFile());
+
+        if (this.pathToConfig == null)
+            this.pathToConfig = getClass().getClassLoader().getResource("properties/default.properties").getFile();
+
+        initConfig(null, this.pathToConfig);
     }
 
     public void initConfig(ActionEvent event, String path) {
@@ -217,15 +208,15 @@ public class SettingsController {
 
         //установка заголовка окна
         if (event != null) {
-            String oldTitle = this.primaryStage.getTitle();
-            this.primaryStage.setTitle(oldTitle + " (" + path +  ")");
+            String oldTitle = this.appStage.getTitle();
+            this.appStage.setTitle(oldTitle + " (" + path + ")");
         }
 
         checkProgress();
     }
 
     public void setPrimaryStage(Stage primaryStage) {
-        this.primaryStage = primaryStage;
+        this.appStage = primaryStage;
     }
 
     @FXML
@@ -314,7 +305,7 @@ public class SettingsController {
 
         File file = new File("C:\\Users\\demed\\Desktop\\RandomizeMaster\\results\\");
         if (!file.exists()) {
-           file.mkdirs();
+            file.mkdirs();
         }
 
         fileChooser.setInitialDirectory(file);
@@ -336,12 +327,12 @@ public class SettingsController {
         map.put(_1024x768_button, false);
         map.put(_800x600_button, false);
 
-       RadioButton radio = (RadioButton) event.getSource();
-       if (radio.isSelected()) {
+        RadioButton radio = (RadioButton) event.getSource();
+        if (radio.isSelected()) {
             map.remove(radio);
-           for (Map.Entry<RadioButton, Boolean> entry : map.entrySet()) {
-               entry.getKey().setSelected(false);
-           }
+            for (Map.Entry<RadioButton, Boolean> entry : map.entrySet()) {
+                entry.getKey().setSelected(false);
+            }
         } else {
             radio.setSelected(true);
         }
@@ -360,44 +351,68 @@ public class SettingsController {
     }
 
     @FXML
-    private void handleLaunchButtonAction(ActionEvent event) throws IOException {
+    void handleLaunchButtonAction(ActionEvent event) throws IOException {
         if (progress.getProgress() < 0.99) {
             //TODO: добавить вывод сообщения по таймеру
             return;
         }
 
+        PreviewController previewController = initNextView(event, getNextViewName());
+
         Image backgroundImage = new Image("file:///" + background.getText());
 
-        URL locationUrl = getClass().getClassLoader().getResource("ui/preview_2.fxml");
-        Stage appStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        FXMLLoader loader = new FXMLLoader(locationUrl);
-        appStage.setScene(new Scene((Pane) loader.load()));
-
-        PreviewController previewController = loader.<PreviewController>getController();
-
         previewController.setScreenResolution(getScreen());
-        previewController.setCountOfPlayers(Integer.parseInt(countOfPlayers.getValue().substring(0,1)));
-        previewController.init(appStage, backgroundImage, input_info.getText(), ouput_info.getText());
+        previewController.setTeamSize(Integer.parseInt(countOfPlayers.getValue().substring(0, 1)));
+
+        previewController.setPrimaryStage(appStage);
+        previewController.setTextColor(textColor.getValue());
+        previewController.configureViewVisibleElements(appStage, isBalansing.isSelected(), backgroundImage, input_info.getText(), ouput_info.getText());
+
         previewController.setVisibleTablaOfPlayers(false);
         previewController.setVisibleNavigateButtons(false);
         previewController.setPathToPhoto(path_to_photo.getText());
+        previewController.setFullScreenIfNeeded(fullScrene.isSelected());
 
-        if (fullScrene.isSelected())
-            previewController.setFullScreen(appStage);
-
-        appStage.show();
+        updateScene(appStage);
     }
 
     private Screen getScreen() {
+
         if (_1920x1080_button.isSelected())
             return Screen._1920x1080;
+
         if (_1366x768_button.isSelected())
             return Screen._1366x768;
+
         if (_1024x768_button.isSelected())
             return Screen._1024x768;
+
         if (_800x600_button.isSelected())
             return Screen._800x600;
+
         return Screen._800x600;
+    }
+
+    @Override
+    public <T> T initNextView(ActionEvent event, String viewName) {
+
+        URL locationUrl = getClass().getClassLoader().getResource(viewName);
+        appStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        FXMLLoader loader = new FXMLLoader(locationUrl);
+
+        try {
+            appStage.setScene(new Scene((Pane) loader.load()));
+        } catch (IOException e) {
+            //TODO: залогировать
+            e.printStackTrace();
+        }
+
+        return loader.getController();
+    }
+
+    @Override
+    public String getNextViewName() {
+        return "views/PresentationView.fxml";
     }
 }
 

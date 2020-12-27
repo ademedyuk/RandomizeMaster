@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.text.Font?>
 
-<Pane prefHeight="768.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.demedyuk.randomize.PreviewController">
+<Pane prefHeight="768.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.demedyuk.randomize.controllers.PreviewController">
    <children>
       <ImageView fx:id="imageView" fitHeight="471.0" fitWidth="683.0" layoutX="-3.0" pickOnBounds="true" preserveRatio="true">
          <viewport>
@@ -19,41 +19,41 @@
          <children>
             <ImageView fx:id="photo1" fitHeight="63.0" fitWidth="69.0" layoutX="242.0" layoutY="133.0" pickOnBounds="true" preserveRatio="true">
                <image>
-                  <Image url="@../ava_men.jpg" />
+                  <Image url="@../images/ava_men.jpg" />
                </image></ImageView>
             <ImageView fx:id="photo2" fitHeight="63.0" fitWidth="69.0" layoutX="242.0" layoutY="203.0" pickOnBounds="true" preserveRatio="true">
                <image>
-                  <Image url="@../ava_men.jpg" />
+                  <Image url="@../images/ava_men.jpg" />
                </image>
             </ImageView>
             <ImageView fx:id="photo3" fitHeight="63.0" fitWidth="69.0" layoutX="242.0" layoutY="273.0" pickOnBounds="true" preserveRatio="true">
                <image>
-                  <Image url="@../ava_men.jpg" />
+                  <Image url="@../images/ava_men.jpg" />
                </image>
             </ImageView>
             <ImageView fx:id="photo4" fitHeight="63.0" fitWidth="69.0" layoutX="242.0" layoutY="343.0" pickOnBounds="true" preserveRatio="true">
                <image>
-                  <Image url="@../ava_men.jpg" />
+                  <Image url="@../images/ava_men.jpg" />
                </image>
             </ImageView>
             <ImageView fx:id="photo5" fitHeight="63.0" fitWidth="69.0" layoutX="242.0" layoutY="414.0" pickOnBounds="true" preserveRatio="true">
                <image>
-                  <Image url="@../ava_men.jpg" />
+                  <Image url="@../images/ava_men.jpg" />
                </image>
             </ImageView>
             <ImageView fx:id="photo6" fitHeight="63.0" fitWidth="69.0" layoutX="242.0" layoutY="483.0" pickOnBounds="true" preserveRatio="true">
                <image>
-                  <Image url="@../ava_men.jpg" />
+                  <Image url="@../images/ava_men.jpg" />
                </image>
             </ImageView>
             <ImageView fx:id="photo7" fitHeight="63.0" fitWidth="69.0" layoutX="242.0" layoutY="553.0" pickOnBounds="true" preserveRatio="true">
                <image>
-                  <Image url="@../ava_men.jpg" />
+                  <Image url="@../images/ava_men.jpg" />
                </image>
             </ImageView>
             <ImageView fx:id="photo8" fitHeight="63.0" fitWidth="69.0" layoutX="242.0" layoutY="623.0" pickOnBounds="true" preserveRatio="true">
                <image>
-                  <Image url="@../ava_men.jpg" />
+                  <Image url="@../images/ava_men.jpg" />
                </image>
             </ImageView>
             <Label fx:id="name1" layoutX="334.0" layoutY="133.0" prefHeight="63.0" prefWidth="405.0" text="Имя Фамилия">
