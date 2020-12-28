@@ -16,6 +16,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import ru.demedyuk.randomize.configuration.RuntimeSettings;
 import ru.demedyuk.randomize.configuration.screen.Screen;
 import ru.demedyuk.randomize.configuration.screen.ScreenProperties;
 import ru.demedyuk.randomize.constants.FileExtensions;
@@ -34,6 +35,7 @@ public class PreviewController implements IController {
     private Stage appStage;
     private ScreenProperties screenResolutionProperties;
     private Color textColor;
+    private Thread randomizeThread;
 
     private int teamSize;
     private int teamsCount;
@@ -248,8 +250,7 @@ public class PreviewController implements IController {
             photos[i].setFitWidth(names[i].getFont().getSize() * PHOTO_RESIZABLE_RATE);
         }
 
-        //рандомизация
-        randomizeAction = new RandomizeAction(filePath, resultFilePath, teamSize, needBalance, this.teamLabel.getText());
+        randomizeAction = new RandomizeAction(filePath, resultFilePath, teamSize, needBalance, teamLabel.getText());
         teamsCount = randomizeAction.teamNumbers.size();
     }
 
@@ -312,6 +313,10 @@ public class PreviewController implements IController {
             if (restartHotKey.match(event)) {
                 SettingsController settingsController = initNextView(new ActionEvent(), getNextViewName());
                 settingsController.initScene();
+
+                appStage.setWidth(RuntimeSettings.SETTING_VIEW_LAST_WIDTH);
+                appStage.setHeight(RuntimeSettings.SETTING_VIEW_LAST_HEIGHT);
+
                 settingsController.setPrimaryStage(appStage);
             }
         });

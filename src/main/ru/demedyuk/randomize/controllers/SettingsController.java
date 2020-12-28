@@ -18,6 +18,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import ru.demedyuk.randomize.AppLaunch;
 import ru.demedyuk.randomize.configuration.properties.ConfigProperties;
+import ru.demedyuk.randomize.configuration.RuntimeSettings;
 import ru.demedyuk.randomize.configuration.screen.Screen;
 import ru.demedyuk.randomize.constants.FileExtensions;
 import ru.demedyuk.randomize.constants.Path;
@@ -43,7 +44,7 @@ public class SettingsController implements IController {
     private static String ABOUT_TEXT = "Randomize Master" +
             System.lineSeparator() +
             System.lineSeparator() +
-            "version " +  AppLaunch.VERSION + " (" + AppLaunch.RELEASE_DATE + ")" +
+            "version " + AppLaunch.VERSION + " (" + AppLaunch.RELEASE_DATE + ")" +
             System.lineSeparator() + System.lineSeparator() +
             "by Andrey Demedyuk" +
             System.lineSeparator() + System.lineSeparator() +
@@ -275,8 +276,11 @@ public class SettingsController implements IController {
             input_info.setText(getPropertyIfExists(PLAYERS_FILE));
             ouput_info.setText(getPropertyIfExists(RESULT_FILE));
             isBalansing.setSelected(getPropertyIfExists(USE_BALANSE).equals("true") ? true : false);
-            usePrivatePhoto.setSelected(getPropertyIfExists(USE_PHOTO).equals("true") ? true : false);
+
+            boolean usePhoto = getPropertyIfExists(USE_PHOTO).equals("true") ? true : false;
+            usePrivatePhoto.setSelected(usePhoto);
             path_to_photo.setText(getPropertyIfExists(PHOTO_DIRECTORY_FILE));
+            usePrivatePhotoAction(new ActionEvent());
 
             background.setText(getPropertyIfExists(BACKGROUD_FILE));
             textColor.setValue(Color.valueOf(getPropertyIfExists(TEXT_COLOR).equals("") ? Color.WHITE.toString() : getPropertyIfExists(TEXT_COLOR)));
@@ -285,12 +289,12 @@ public class SettingsController implements IController {
             if (getPropertyIfExists(SCREEN_SIZE).equals("false") ? true : false) {
                 inWindow.setSelected(true);
                 fullScrene.setSelected(false);
-            }
-            else
-            {   inWindow.setSelected(false);
+            } else {
+                inWindow.setSelected(false);
                 fullScrene.setSelected(true);
             }
 
+            checkProgress();
 
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -368,6 +372,11 @@ public class SettingsController implements IController {
             addProgressValue();
         else
             messageField.setText("Выберите файл с участниками...");
+
+        if (progress.getProgress() == 1.0) {
+            messageField.setText("");
+        }
+
     }
 
     private void addProgressValue() {
@@ -460,6 +469,9 @@ public class SettingsController implements IController {
             return;
         }
 
+        RuntimeSettings.SETTING_VIEW_LAST_WIDTH = appStage.getWidth();
+        RuntimeSettings.SETTING_VIEW_LAST_HEIGHT = appStage.getHeight();
+
         PreviewController previewController = initNextView(event, getNextViewName());
 
         Image backgroundImage = new Image(Path.FILE + background.getText());
@@ -534,7 +546,6 @@ public class SettingsController implements IController {
 
     @Override
     public <T> T initNextView(ActionEvent event, String viewName) {
-
         URL locationUrl = getClass().getClassLoader().getResource(viewName);
         appStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         FXMLLoader loader = new FXMLLoader(locationUrl);

@@ -2,3 +2,4 @@ target/
 
 builds/environment/
 builds/launch4jconfigs/
+out/artifacts/

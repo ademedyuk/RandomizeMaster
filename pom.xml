@@ -17,20 +17,23 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.docx4j</groupId>
+                <artifactId>docx4j</artifactId>
+                <version>6.1.1</version>
+            </plugin>
         </plugins>
     </build>
     <dependencies>
         <dependency>
+            <groupId>org.docx4j</groupId>
+            <artifactId>docx4j</artifactId>
+            <version>6.1.1</version>
+        </dependency>
+        <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
             <version>15-ea+6</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.docx4j/docx4j -->
-        <dependency>
-            <groupId>org.docx4j</groupId>
-            <artifactId>docx4j</artifactId>
-            <version>6.1.2</version>
         </dependency>
     </dependencies>
 </project>

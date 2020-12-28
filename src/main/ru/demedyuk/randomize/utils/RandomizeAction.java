@@ -37,25 +37,24 @@ public class RandomizeAction {
         this.teamSize = countOfPlayers;
         this.teamLabel = teamLabel;
 
-        if (needBalance)
+        if (needBalance) {
             initPlayersBySex();
-        else
-            initPlayers();
-
-        calculateTeams();
-
-        if (needBalance)
+            calculateTeams();
             doRandomBySex();
-        else
+        }
+        else {
+            initPlayers();
+            calculateTeams();
             doRandom();
+        }
 
-        Thread myThready = new Thread(new Runnable() {
+        Thread saveResultsThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 saveResults();
             }
         });
-        myThready.start();
+        saveResultsThread.start();
     }
 
     private void calculateTeams() {
@@ -125,7 +124,7 @@ public class RandomizeAction {
         DocxGenerate docxGenerate = new DocxGenerate(this.resultFilePath.replace(FileExtensions.DOCX, ""));
 
         for (int i = 0; i < finalTeams.size(); i++) {
-            docxGenerate.addOneTeamInfo(this.teamLabel + " " + (int)(i+1), finalTeams.get(i));
+            docxGenerate.addOneTeamInfo(this.teamLabel + " " + (int) (i + 1), finalTeams.get(i));
         }
 
         docxGenerate.generate();
