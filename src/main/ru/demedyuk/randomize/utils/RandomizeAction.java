@@ -1,5 +1,6 @@
 package ru.demedyuk.randomize.utils;
 
+import ru.demedyuk.randomize.constants.FileExtensions;
 import ru.demedyuk.randomize.models.Player;
 import ru.demedyuk.randomize.models.Gender;
 
@@ -17,23 +18,24 @@ public class RandomizeAction {
     private String filePath;
     private int teamSize;
     private String resultFilePath;
-    private String fileContent = "";
+    private String teamLabel;
 
     //списки нераспределенных игроков
     public List<Player> allPlayers = new ArrayList<>();
     public List<Player> girlsList = new ArrayList<>();
     public List<Player> boysList = new ArrayList<>();
 
-    public HashMap<Integer, Integer> teamNumbers = new HashMap<>();//key - номер команды, value - количество игроков
+    //количество игроков в команде
+    public HashMap<Integer, Integer> teamNumbers = new HashMap<>();
 
     //готовые команды
     private HashMap<Integer, List<Player>> finalTeams = new HashMap<>();
 
-    public RandomizeAction(String filePath, String resultFilePath, int countOfPlayers, boolean needBalance) {
-        //путь до файла с настройками
+    public RandomizeAction(String filePath, String resultFilePath, int countOfPlayers, boolean needBalance, String teamLabel) {
         this.filePath = filePath;
         this.resultFilePath = resultFilePath;
         this.teamSize = countOfPlayers;
+        this.teamLabel = teamLabel;
 
         if (needBalance)
             initPlayersBySex();
@@ -46,6 +48,14 @@ public class RandomizeAction {
             doRandomBySex();
         else
             doRandom();
+
+        Thread myThready = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                saveResults();
+            }
+        });
+        myThready.start();
     }
 
     private void calculateTeams() {
@@ -109,11 +119,16 @@ public class RandomizeAction {
     }
 
     private void saveResults() {
-        if (allPlayers.size() != 0)
+        if (finalTeams.size() == 0)
             return;
 
-//       TODO: Сохранение результатов жребьевки в файл
+        DocxGenerate docxGenerate = new DocxGenerate(this.resultFilePath.replace(FileExtensions.DOCX, ""));
 
+        for (int i = 0; i < finalTeams.size(); i++) {
+            docxGenerate.addOneTeamInfo(this.teamLabel + " " + (int)(i+1), finalTeams.get(i));
+        }
+
+        docxGenerate.generate();
     }
 
     private void initPlayers() {

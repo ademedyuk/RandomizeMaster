@@ -16,19 +16,27 @@ import ru.demedyuk.randomize.controllers.SettingsController;
 
 import java.net.URL;
 
+import static ru.demedyuk.randomize.constants.FileExtensions.FXML;
+
 public class AppLaunch extends Application {
 
+    public static final String VERSION = "1.0";
+    public static final String RELEASE_DATE = "28.12.2020";
+
     private Stage appStage;
+
+    public static final String PATH_TO_LOGO = "images/logo.png";
+    private static final String MAIN_TITLE = "Randomize Master";
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         appStage = primaryStage;
 
-        URL locationUrl = getClass().getClassLoader().getResource("views/SettingsView.fxml");
+        URL locationUrl = getClass().getClassLoader().getResource("views/SettingsView" + FXML);
         Parent root = FXMLLoader.load(locationUrl);
         appStage.setResizable(true);
-        appStage.getIcons().add(new Image(getClass().getClassLoader().getResourceAsStream("images/persona_camp_icon.png")));
-        appStage.setTitle("Randomize Master");
+        appStage.getIcons().add(new Image(getClass().getClassLoader().getResourceAsStream(PATH_TO_LOGO)));
+        appStage.setTitle(MAIN_TITLE);
         appStage.show();
         appStage.setScene(new Scene(root));
 

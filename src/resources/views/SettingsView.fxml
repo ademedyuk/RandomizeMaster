@@ -35,7 +35,7 @@
         </Menu>
         <Menu mnemonicParsing="false" text="Help">
           <items>
-            <MenuItem fx:id="aboutItem" mnemonicParsing="false" text="About Randomize Master" />
+            <MenuItem fx:id="aboutItem" mnemonicParsing="false" onAction="#helpAboutActionHandler" text="About" />
           </items>
         </Menu>
       </menus>
@@ -63,22 +63,22 @@
             </Text>
             <TextField fx:id="background" layoutX="201.0" layoutY="394.0" prefHeight="31.0" prefWidth="350.0" />
             <Button fx:id="selectBackgroundImageButton" layoutX="562.0" layoutY="394.0" mnemonicParsing="false" onAction="#selectBackgroundImageButtonAction" prefHeight="31.0" prefWidth="92.0" text="Обзор..." />
-            <RadioButton fx:id="fullScrene" layoutX="205.0" layoutY="493.0" mnemonicParsing="false" onAction="#handleFullScrene" selected="true" text="Полный экран" />
-            <RadioButton fx:id="inWindow" layoutX="205.0" layoutY="521.0" mnemonicParsing="false" onAction="#handleInWindow" text="В окне" />
-            <RadioButton fx:id="_1920x1080_button" layoutX="205.0" layoutY="564.0" mnemonicParsing="false" onAction="#screenResolutionAction" selected="true" text="1920 x 1080" />
-            <RadioButton fx:id="_1366x768_button" layoutX="345.0" layoutY="564.0" mnemonicParsing="false" onAction="#screenResolutionAction" text="1366 x 768 " />
-            <Text layoutX="49.0" layoutY="580.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Разрешение экрана:">
+            <RadioButton fx:id="fullScrene" layoutX="200.0" layoutY="531.0" mnemonicParsing="false" onAction="#handleFullScrene" selected="true" text="Полный экран" />
+            <RadioButton fx:id="inWindow" layoutX="200.0" layoutY="559.0" mnemonicParsing="false" onAction="#handleInWindow" text="В окне" />
+            <RadioButton fx:id="_1920x1080_button" layoutX="200.0" layoutY="602.0" mnemonicParsing="false" onAction="#screenResolutionAction" selected="true" text="1920 x 1080" />
+            <RadioButton fx:id="_1366x768_button" layoutX="340.0" layoutY="602.0" mnemonicParsing="false" onAction="#screenResolutionAction" text="1366 x 768 " />
+            <Text layoutX="51.0" layoutY="615.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Разрешение экрана:">
                <font>
                   <Font name="Playbill" size="15.0" />
                </font>
             </Text>
-            <RadioButton fx:id="_1024x768_button" layoutX="205.0" layoutY="593.0" mnemonicParsing="false" onAction="#screenResolutionAction" text="1024 x 768" />
-            <Text layoutX="154.0" layoutY="508.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Вид:">
+            <RadioButton fx:id="_1024x768_button" layoutX="200.0" layoutY="631.0" mnemonicParsing="false" onAction="#screenResolutionAction" text="1024 x 768" />
+            <Text layoutX="154.0" layoutY="546.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Вид:">
                <font>
                   <Font name="Playbill" size="15.0" />
                </font>
             </Text>
-            <RadioButton fx:id="_800x600_button" layoutX="345.0" layoutY="593.0" mnemonicParsing="false" onAction="#screenResolutionAction" text="800 x 600" />
+            <RadioButton fx:id="_800x600_button" layoutX="340.0" layoutY="631.0" mnemonicParsing="false" onAction="#screenResolutionAction" text="800 x 600" />
             <CheckBox fx:id="isBalansing" layoutX="200.0" layoutY="211.0" mnemonicParsing="false" prefHeight="21.0" prefWidth="222.0" text="Баланс мальчики/девочки" />
             <TextField fx:id="path_to_photo" disable="true" layoutX="201.0" layoutY="277.0" prefHeight="31.0" prefWidth="347.0" />
             <Text fx:id="label_photo" layoutX="81.0" layoutY="298.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Каталог с фото:">
@@ -113,6 +113,12 @@
                   <Font name="Playbill" size="15.0" />
                </font>
             </Text>
+            <Text layoutX="53.0" layoutY="505.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Название команды:" wrappingWidth="133.2055721282959">
+               <font>
+                  <Font name="Playbill" size="15.0" />
+               </font>
+            </Text>
+            <TextField fx:id="teamTitle" layoutX="202.0" layoutY="484.0" prefHeight="31.0" prefWidth="350.0" />
          </children>
       </Pane>
   </children>

@@ -5,6 +5,7 @@ import javafx.scene.control.Label;
 import javafx.scene.text.Font;
 
 public class ScreenProperties {
+
     public int width;
     public int height;
     public int fontSize;

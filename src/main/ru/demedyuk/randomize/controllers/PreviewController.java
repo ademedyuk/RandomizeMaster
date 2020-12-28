@@ -18,6 +18,8 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import ru.demedyuk.randomize.configuration.screen.Screen;
 import ru.demedyuk.randomize.configuration.screen.ScreenProperties;
+import ru.demedyuk.randomize.constants.FileExtensions;
+import ru.demedyuk.randomize.constants.Path;
 import ru.demedyuk.randomize.models.Player;
 import ru.demedyuk.randomize.utils.RandomizeAction;
 
@@ -27,14 +29,21 @@ import java.net.URL;
 
 public class PreviewController implements IController {
 
-    private Stage appStage;
     public RandomizeAction randomizeAction;
+
+    private Stage appStage;
     private ScreenProperties screenResolutionProperties;
     private Color textColor;
+
     private int teamSize;
     private int teamsCount;
     private int startIndex; //индекс начала отображения игроков
+
     private String pathToPhoto;
+    private String teamTitle;
+
+    private static final double RESIZABLE_RATE = 1.02;
+    private static final double PHOTO_RESIZABLE_RATE = 1.5;
 
     @FXML
     private ImageView imageView;
@@ -145,7 +154,7 @@ public class PreviewController implements IController {
             index++;
         }
 
-        teamLabel.setText("Команда " + currentPageIndex);
+        teamLabel.setText(this.teamTitle + " " + currentPageIndex);
         setVisibleTablaOfPlayers(true);
     }
 
@@ -178,8 +187,9 @@ public class PreviewController implements IController {
         this.appStage = primaryStage;
     }
 
-    public void configureViewVisibleElements(Stage stage, boolean needBalance, Image image, String filePath, String resultFilePath) {
-        appStage = stage;
+    public void configureViewVisibleElements(Stage stage, boolean needBalance, Image image, String filePath, String resultFilePath, String teamTitle) {
+        this.appStage = stage;
+        this.teamTitle = teamTitle;
         addEvents();
 
         names = new Label[]{name1, name2, name3, name4, name5, name6, name7, name8};
@@ -216,6 +226,7 @@ public class PreviewController implements IController {
         teamLabel.setLayoutY(screenResolutionProperties.height * 0.03);
         teamLabel.setTextFill(this.textColor);
         teamLabel.setFont(Font.font(screenResolutionProperties.fontSize * 1.2));
+        teamLabel.setText(this.teamTitle);
 
         //players
         for (int i = 0; i < 8; i++) {
@@ -231,14 +242,14 @@ public class PreviewController implements IController {
             names[i].setPrefWidth(screenResolutionProperties.width * 0.5);
             names[i].setFont(Font.font(screenResolutionProperties.fontSize));
 
-            photos[i].setLayoutX(names[i].getLayoutX() - photos[i].getFitHeight() * 1.5);
+            photos[i].setLayoutX(names[i].getLayoutX() - photos[i].getFitHeight() * PHOTO_RESIZABLE_RATE);
             photos[i].setLayoutY(names[i].getLayoutY());
-            photos[i].setFitHeight(names[i].getFont().getSize() * 1.5);
-            photos[i].setFitWidth(names[i].getFont().getSize() * 1.5);
+            photos[i].setFitHeight(names[i].getFont().getSize() * PHOTO_RESIZABLE_RATE);
+            photos[i].setFitWidth(names[i].getFont().getSize() * PHOTO_RESIZABLE_RATE);
         }
 
         //рандомизация
-        randomizeAction = new RandomizeAction(filePath, resultFilePath, teamSize, needBalance);
+        randomizeAction = new RandomizeAction(filePath, resultFilePath, teamSize, needBalance, this.teamLabel.getText());
         teamsCount = randomizeAction.teamNumbers.size();
     }
 
@@ -253,8 +264,8 @@ public class PreviewController implements IController {
         appStage.setFullScreen(true);
         imageView.setPreserveRatio(true);
 
-        imageView.setFitHeight(javafx.stage.Screen.getPrimary().getBounds().getMaxY() * 1.02);
-        imageView.setFitWidth(javafx.stage.Screen.getPrimary().getBounds().getMaxX() * 1.02);
+        imageView.setFitHeight(javafx.stage.Screen.getPrimary().getBounds().getMaxY() * RESIZABLE_RATE);
+        imageView.setFitWidth(javafx.stage.Screen.getPrimary().getBounds().getMaxX() * RESIZABLE_RATE);
     }
 
     public void setPathToPhoto(String pathToPhoto) {
@@ -291,7 +302,7 @@ public class PreviewController implements IController {
 
     private Image getPhoto(Player player) {
 
-        return new Image("file:///" + pathToPhoto + "//" + player.number + ".png");
+        return new Image(Path.FILE + pathToPhoto + "//" + player.number + FileExtensions.PNG);
     }
 
     private void addEvents() {
