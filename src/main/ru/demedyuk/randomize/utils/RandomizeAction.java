@@ -1,13 +1,9 @@
 package ru.demedyuk.randomize.utils;
 
 import ru.demedyuk.randomize.constants.FileExtensions;
-import ru.demedyuk.randomize.models.Player;
 import ru.demedyuk.randomize.models.Gender;
+import ru.demedyuk.randomize.models.Player;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,24 +11,23 @@ import java.util.Random;
 
 public class RandomizeAction {
 
-    private String filePath;
     private int teamSize;
     private String resultFilePath;
     private String teamLabel;
 
     //списки нераспределенных игроков
-    public List<Player> allPlayers = new ArrayList<>();
-    public List<Player> girlsList = new ArrayList<>();
-    public List<Player> boysList = new ArrayList<>();
+    private List<Player> allPlayers;
+    private List<Player> girlsList = new ArrayList<>();
+    private List<Player> boysList = new ArrayList<>();
 
     //количество игроков в команде
-    public HashMap<Integer, Integer> teamNumbers = new HashMap<>();
+    private HashMap<Integer, Integer> teamNumbers = new HashMap<>();
 
     //готовые команды
     private HashMap<Integer, List<Player>> finalTeams = new HashMap<>();
 
-    public RandomizeAction(String filePath, String resultFilePath, int countOfPlayers, boolean needBalance, String teamLabel) {
-        this.filePath = filePath;
+    public RandomizeAction(List<Player> allPlayers, String resultFilePath, int countOfPlayers, boolean needBalance, String teamLabel) {
+        this.allPlayers = allPlayers;
         this.resultFilePath = resultFilePath;
         this.teamSize = countOfPlayers;
         this.teamLabel = teamLabel;
@@ -41,9 +36,7 @@ public class RandomizeAction {
             initPlayersBySex();
             calculateTeams();
             doRandomBySex();
-        }
-        else {
-            initPlayers();
+        } else {
             calculateTeams();
             doRandom();
         }
@@ -57,6 +50,10 @@ public class RandomizeAction {
         saveResultsThread.start();
     }
 
+    public HashMap<Integer, List<Player>> getResult() {
+        return finalTeams;
+    }
+
     private void calculateTeams() {
         //количество команд
         int countOfTeam = allPlayers.size() / this.teamSize;
@@ -64,14 +61,23 @@ public class RandomizeAction {
             teamNumbers.put(i, this.teamSize);
         }
 
-        //при нецелом делении, создаем еще одну команду
         if (allPlayers.size() % this.teamSize != 0) {
-            int players = (-1) * ((allPlayers.size() - countOfTeam * this.teamSize) - countOfTeam);//количество лишних игроков
-            countOfTeam++;
-            teamNumbers.put(countOfTeam, this.teamSize);
+            //команды с разным количеством человек
+            int players = allPlayers.size() - (this.teamSize * teamNumbers.size());//количество лишних игроков
 
-            for (int i = 0; i < players; i++) {
-                teamNumbers.put(countOfTeam - i, this.teamSize - 1);
+            if (this.teamSize / players < 2) {
+                //new team
+                countOfTeam++;
+                teamNumbers.put(countOfTeam - 1, this.teamSize);
+
+                for (int i = 0; i < (this.teamSize - players); i++) {
+                    teamNumbers.put(countOfTeam - (i + 1), this.teamSize - 1);
+                }
+            } else {
+                //without new team
+                for (int i = 0; i < players; i++) {
+                    teamNumbers.put(countOfTeam - (i + 1), this.teamSize + 1);
+                }
             }
         }
     }
@@ -81,19 +87,21 @@ public class RandomizeAction {
             for (int teamIndex : teamNumbers.keySet()) {
                 finalTeams.putIfAbsent(teamIndex, new ArrayList<>());
 
-                if (!boysList.isEmpty()) {
-                    Player randomPlayer = boysList.get(new Random().nextInt(boysList.size()));
-                    finalTeams.get(teamIndex).add(randomPlayer);
+                if (finalTeams.get(teamIndex).size() < teamNumbers.get(teamIndex)) {
+                    if (!boysList.isEmpty()) {
+                        Player randomPlayer = boysList.get(new Random().nextInt(boysList.size()));
+                        finalTeams.get(teamIndex).add(randomPlayer);
 
-                    boysList.remove(randomPlayer);
-                    allPlayers.remove(randomPlayer);
+                        boysList.remove(randomPlayer);
+                        allPlayers.remove(randomPlayer);
 
-                } else if (!girlsList.isEmpty()) {
-                    Player randomPlayer = girlsList.get(new Random().nextInt(girlsList.size()));
-                    finalTeams.get(teamIndex).add(randomPlayer);
+                    } else if (!girlsList.isEmpty()) {
+                        Player randomPlayer = girlsList.get(new Random().nextInt(girlsList.size()));
+                        finalTeams.get(teamIndex).add(randomPlayer);
 
-                    girlsList.remove(randomPlayer);
-                    allPlayers.remove(randomPlayer);
+                        girlsList.remove(randomPlayer);
+                        allPlayers.remove(randomPlayer);
+                    }
                 }
             }
         }
@@ -113,10 +121,6 @@ public class RandomizeAction {
         }
     }
 
-    public List<Player> getTeam(int index) {
-        return finalTeams.get(index - 1);
-    }
-
     private void saveResults() {
         if (finalTeams.size() == 0)
             return;
@@ -130,50 +134,14 @@ public class RandomizeAction {
         docxGenerate.generate();
     }
 
-    private void initPlayers() {
-        List<String> lines = getTextFromFile();
-
-        for (String line : lines) {
-            String delimeter = " "; // Разделитель
-            String[] subStr = line.split(delimeter);
-            allPlayers.add(new Player(subStr[0], subStr[1], subStr[2]));
-        }
-    }
-
     private void initPlayersBySex() {
-        List<String> lines = getTextFromFile();
-
-        for (String line : lines) {
-            String delimeter = " "; // Разделитель
-            String[] subStr = line.split(delimeter);
-
-            String gender = subStr[3].substring(0, 1);
-            Player player = new Player(subStr[0], subStr[1], subStr[2]);
-
-            Gender genderByID = Gender.getGenderByID(gender);
-
-            if (genderByID.equals(Gender.BOY))
+        for (Player player : allPlayers) {
+            if (player.gender.equals(Gender.BOY))
                 boysList.add(player);
-            else if (genderByID.equals(Gender.GIRL))
+            else if (player.gender.equals(Gender.GIRL))
                 girlsList.add(player);
-            else if (genderByID.equals(Gender.NONE))
-                throw new IllegalArgumentException("Gender if not defined");
-
-            allPlayers.add(player);
+            else if (player.gender.equals(Gender.NONE))
+                throw new IllegalArgumentException("Во входном файле не указан пол");
         }
     }
-
-    private List<String> getTextFromFile() {
-        Path file = Paths.get(this.filePath);
-        List<String> lines = null;
-
-        try {
-            lines = Files.readAllLines(file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return lines;
-    }
-
 }

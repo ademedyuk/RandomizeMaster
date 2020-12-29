@@ -17,13 +17,20 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import ru.demedyuk.randomize.AppLaunch;
-import ru.demedyuk.randomize.configuration.properties.ConfigProperties;
 import ru.demedyuk.randomize.configuration.RuntimeSettings;
+import ru.demedyuk.randomize.configuration.properties.ActionProperties;
+import ru.demedyuk.randomize.configuration.properties.ConfigProperties;
 import ru.demedyuk.randomize.configuration.screen.Screen;
 import ru.demedyuk.randomize.constants.FileExtensions;
-import ru.demedyuk.randomize.constants.Path;
+import ru.demedyuk.randomize.constants.Paths;
+import ru.demedyuk.randomize.models.InputFileReader;
+import ru.demedyuk.randomize.utils.FIleUtils;
+import ru.demedyuk.randomize.utils.RandomizeAction;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +39,7 @@ import java.util.Properties;
 import static ru.demedyuk.randomize.configuration.properties.ConfigProperties.*;
 import static ru.demedyuk.randomize.constants.FileExtensions.*;
 import static ru.demedyuk.randomize.utils.FIleUtils.makeDirsIfNotExists;
+import static ru.demedyuk.randomize.utils.OutputMessageActions.showErrorMessageWithDefaultDelay;
 
 public class SettingsController implements IController {
 
@@ -91,48 +99,26 @@ public class SettingsController implements IController {
     @FXML
     void fileSaveActionHandler(ActionEvent event) {
         updateProps();
-        if (pathToConfig != null) {
-            try (OutputStream output = new FileOutputStream(pathToConfig)) {
-                Properties prop = this.props;
 
-                // save properties to project root folder
-                prop.store(output, null);
-
-            } catch (IOException io) {
-                io.printStackTrace();
-            }
-        } else
+        if (pathToConfig != null)
+            ActionProperties.saveProperties(this.props, pathToConfig);
+        else
             fileSaveAsActionHandler(event);
-
     }
 
 
     @FXML
     void fileSaveAsActionHandler(ActionEvent event) {
         updateProps();
-
         File configDirectory = makeDirsIfNotExists("\\configs\\");
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialDirectory(configDirectory);
         fileChooser.setTitle("Сохранить конфигурацию");
         fileChooser.setInitialFileName("new" + CONFIG);
-
         File selectedFile = fileChooser.showSaveDialog(null);
 
-        if (selectedFile != null) {
-            pathToConfig = selectedFile.getPath();
-            try (OutputStream output = new FileOutputStream(selectedFile)) {
-                Properties prop = this.props;
-
-                // save properties to project root folder
-                prop.store(output, null);
-
-            } catch (IOException io) {
-                io.printStackTrace();
-            }
-        }
-
+        pathToConfig = ActionProperties.saveProperties(this.props, selectedFile);
     }
 
     @FXML
@@ -235,13 +221,10 @@ public class SettingsController implements IController {
     private ProgressBar progress;
     @FXML
     private Text messageField;
-
     @FXML
     private Button launch;
-
     @FXML
     private TextField teamTitle;
-
     @FXML
     private ColorPicker textColor;
 
@@ -326,23 +309,6 @@ public class SettingsController implements IController {
     }
 
     @FXML
-    void selectBackgroundImageButtonAction(ActionEvent event) {
-        File backgroundsDirectory = makeDirsIfNotExists("\\backgrounds\\");
-
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setInitialDirectory(backgroundsDirectory);
-        fileChooser.setTitle("Выберите фон");
-        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Изображения",
-                "*.jpg", "*.jpeg"));
-        File selectedFile = fileChooser.showOpenDialog(null);
-
-        if (selectedFile != null) {
-            background.setText(selectedFile.getAbsolutePath());
-        }
-        checkProgress();
-    }
-
-    @FXML
     void usePrivatePhotoAction(ActionEvent event) {
         boolean value = usePrivatePhoto.isSelected();
         label_photo.setFill(value ? Paint.valueOf("000000") : Paint.valueOf("DBDBDB"));
@@ -386,10 +352,8 @@ public class SettingsController implements IController {
 
     @FXML
     void selectListOfPlayersButtonAction(ActionEvent event) {
-        File playersDirectory = makeDirsIfNotExists("\\players\\");
-
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setInitialDirectory(playersDirectory);
+        fileChooser.setInitialDirectory(FIleUtils.findInitialDirectory(input_info.getText(), "\\players\\"));
         fileChooser.setTitle("Выберите список участников");
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("Участники", ALL_PREFIX + PLAYERS),
@@ -404,10 +368,8 @@ public class SettingsController implements IController {
 
     @FXML
     void selectResultDirectoryButtonAction(ActionEvent event) {
-        File resultsDirectory = makeDirsIfNotExists("\\results\\");
-
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setInitialDirectory(resultsDirectory);
+        fileChooser.setInitialDirectory(FIleUtils.findInitialDirectory(ouput_info.getText(), "\\results\\"));
         fileChooser.setTitle("Каталог для сохранения результатов");
         fileChooser.setInitialFileName("result" + FileExtensions.DOCX);
         fileChooser.getExtensionFilters().addAll(
@@ -420,6 +382,7 @@ public class SettingsController implements IController {
             ouput_info.setText(selectedFile.getAbsolutePath());
         checkProgress();
     }
+
 
     @FXML
     void screenResolutionAction(ActionEvent event) {
@@ -443,10 +406,8 @@ public class SettingsController implements IController {
 
     @FXML
     void selectPhotoButtonAction(ActionEvent event) {
-        File photosDirectory = makeDirsIfNotExists("\\photos\\");
-
         DirectoryChooser directoryChooser = new DirectoryChooser();
-        directoryChooser.setInitialDirectory(photosDirectory);
+        directoryChooser.setInitialDirectory(FIleUtils.findInitialDirectory(path_to_photo.getText(), "\\photos\\"));
         directoryChooser.setTitle("Укажите каталог с фотографиями участников");
 
         File selectedFile = directoryChooser.showDialog(null);
@@ -458,6 +419,21 @@ public class SettingsController implements IController {
     }
 
     @FXML
+    void selectBackgroundImageButtonAction(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setInitialDirectory(FIleUtils.findInitialDirectory(background.getText(), "\\backgrounds\\"));
+        fileChooser.setTitle("Выберите фон");
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Изображения",
+                "*.jpg", "*.jpeg"));
+        File selectedFile = fileChooser.showOpenDialog(null);
+
+        if (selectedFile != null) {
+            background.setText(selectedFile.getAbsolutePath());
+        }
+        checkProgress();
+    }
+
+    @FXML
     void handleLaunchButtonAction(ActionEvent event) throws IOException {
         if (progress.getProgress() < 0.99) {
             //TODO: добавить вывод сообщения по таймеру
@@ -465,7 +441,38 @@ public class SettingsController implements IController {
         }
 
         if (teamTitle.getText().length() > 15) {
-            messageField.setText("Название команды слишком длинное");
+            showErrorMessageWithDefaultDelay(messageField, "Название команды слишком длинное");
+            return;
+        }
+
+        InputFileReader playersFile = new InputFileReader(input_info.getText());
+
+
+        try {
+            playersFile.validateDocument();
+        } catch (IllegalArgumentException e) {
+            messageField.setText("Проверьте корректность входного файла");
+            return;
+        }
+
+        int teamSize = Integer.parseInt(countOfPlayers.getValue().substring(0, 1));
+
+        //randomize
+        RandomizeAction randomizeAction = null;
+        try {
+            randomizeAction = new RandomizeAction(
+                    playersFile.getAllPlayers(),
+                    ouput_info.getText(),
+                    teamSize,
+                    isBalansing.isSelected(),
+                    teamTitle.getText());
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            messageField.setText(e.getMessage());
+            return;
+        } catch (Exception e) {
+            e.printStackTrace();
+            messageField.setText("Ошибка при генерации команд");
             return;
         }
 
@@ -474,19 +481,19 @@ public class SettingsController implements IController {
 
         PreviewController previewController = initNextView(event, getNextViewName());
 
-        Image backgroundImage = new Image(Path.FILE + background.getText());
+        Image backgroundImage = new Image(Paths.FILE + background.getText());
 
         previewController.setScreenResolution(getScreen());
-        previewController.setTeamSize(Integer.parseInt(countOfPlayers.getValue().substring(0, 1)));
-
+        previewController.setTeamSizePreference(teamSize);
         previewController.setPrimaryStage(appStage);
         previewController.setTextColor(textColor.getValue());
-        previewController.configureViewVisibleElements(appStage,
-                isBalansing.isSelected(), backgroundImage, input_info.getText(), ouput_info.getText(), teamTitle.getText());
-
-        previewController.setVisibleTablaOfPlayers(false);
-        previewController.setVisibleNavigateButtons(false);
+        previewController.setTeamTitle(teamTitle.getText());
         previewController.setPathToPhoto(path_to_photo.getText());
+        previewController.setTeams(randomizeAction.getResult());
+        previewController.configureViewVisibleElements(appStage, backgroundImage);
+
+        previewController.setUnvisibleTableOfPlayers();
+        previewController.setUnvisibleNavigateButtons();
         previewController.setFullScreenIfNeeded(fullScrene.isSelected());
 
         updateScene(appStage);

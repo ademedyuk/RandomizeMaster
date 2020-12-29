@@ -20,24 +20,23 @@ import ru.demedyuk.randomize.configuration.RuntimeSettings;
 import ru.demedyuk.randomize.configuration.screen.Screen;
 import ru.demedyuk.randomize.configuration.screen.ScreenProperties;
 import ru.demedyuk.randomize.constants.FileExtensions;
-import ru.demedyuk.randomize.constants.Path;
+import ru.demedyuk.randomize.constants.Paths;
 import ru.demedyuk.randomize.models.Player;
-import ru.demedyuk.randomize.utils.RandomizeAction;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.List;
 
 
 public class PreviewController implements IController {
 
-    public RandomizeAction randomizeAction;
-
     private Stage appStage;
     private ScreenProperties screenResolutionProperties;
     private Color textColor;
-    private Thread randomizeThread;
 
-    private int teamSize;
+    private HashMap<Integer, List<Player>> finalTeams;
+    private int teamSizePreference;
     private int teamsCount;
     private int startIndex; //индекс начала отображения игроков
 
@@ -78,6 +77,9 @@ public class PreviewController implements IController {
     private ImageView photo8;
 
     @FXML
+    private ImageView photo9;
+
+    @FXML
     private Label name1;
 
     @FXML
@@ -100,6 +102,9 @@ public class PreviewController implements IController {
 
     @FXML
     private Label name8;
+
+    @FXML
+    private Label name9;
 
     @FXML
     private Label teamLabel;
@@ -148,7 +153,7 @@ public class PreviewController implements IController {
         cleanTable();
 
         int index = 0;
-        for (Player player : randomizeAction.getTeam(currentPageIndex)) {
+        for (Player player : finalTeams.get(currentPageIndex - 1)) {
             names[index + this.startIndex].setText(player.number + " " + player.firstName + " " + player.lastName);
             photos[index + this.startIndex].setImage(getPhoto(player));
             imageView.setPreserveRatio(true);
@@ -157,20 +162,28 @@ public class PreviewController implements IController {
         }
 
         teamLabel.setText(this.teamTitle + " " + currentPageIndex);
-        setVisibleTablaOfPlayers(true);
+        setVisibleTablaOfPlayers(finalTeams.get(currentPageIndex - 1).size(), this.startIndex, true);
     }
 
-    public void setVisibleTablaOfPlayers(boolean value) {
+    public void setVisibleTablaOfPlayers(int size, int startIndexValue, boolean value) {
         teamLabel.setVisible(value);
-        for (int i = 0; i < teamSize; i++) {
-            names[i + this.startIndex].setVisible(value);
-            photos[i + this.startIndex].setVisible(value);
+        for (int i = 0; i < size; i++) {
+            names[i + startIndexValue].setVisible(value);
+            photos[i + startIndexValue].setVisible(value);
         }
+    }
+
+    public void setUnvisibleTableOfPlayers() {
+        setVisibleTablaOfPlayers(names.length, 0, false);
     }
 
     public void setVisibleNavigateButtons(boolean value) {
         nextButton.setVisible(value);
         previousButton.setVisible(value);
+    }
+
+    public void setUnvisibleNavigateButtons() {
+        setVisibleNavigateButtons(false);
     }
 
     public PreviewController setScreenResolution(Screen value) {
@@ -179,7 +192,7 @@ public class PreviewController implements IController {
     }
 
     private void cleanTable() {
-        for (int i = 0; i < teamSize; i++) {
+        for (int i = 0; i < teamSizePreference + 1; i++) {
             names[i + this.startIndex].setText("");
             photos[i + this.startIndex].setImage(null);
         }
@@ -189,16 +202,24 @@ public class PreviewController implements IController {
         this.appStage = primaryStage;
     }
 
-    public void configureViewVisibleElements(Stage stage, boolean needBalance, Image image, String filePath, String resultFilePath, String teamTitle) {
-        this.appStage = stage;
+    public void setTeamTitle(String teamTitle) {
         this.teamTitle = teamTitle;
+    }
+
+    public void setTeams(HashMap<Integer, List<Player>> teams) {
+        this.finalTeams = teams;
+        this.teamsCount = teams.size();
+    }
+
+    public void configureViewVisibleElements(Stage stage, Image image) {
+        this.appStage = stage;
         addEvents();
 
-        names = new Label[]{name1, name2, name3, name4, name5, name6, name7, name8};
-        photos = new ImageView[]{photo1, photo2, photo3, photo4, photo5, photo6, photo7, photo8};
+        names = new Label[]{name1, name2, name3, name4, name5, name6, name7, name8, name9};
+        photos = new ImageView[]{photo1, photo2, photo3, photo4, photo5, photo6, photo7, photo8, photo9};
 
         //hide all visible items
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < names.length; i++) {
             names[i].setVisible(false);
             photos[i].setVisible(false);
         }
@@ -231,7 +252,7 @@ public class PreviewController implements IController {
         teamLabel.setText(this.teamTitle);
 
         //players
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 9; i++) {
             names[i].setTextFill(this.textColor);
             names[i].setLayoutX(screenResolutionProperties.nameLabel.getLayoutX());
 
@@ -249,9 +270,6 @@ public class PreviewController implements IController {
             photos[i].setFitHeight(names[i].getFont().getSize() * PHOTO_RESIZABLE_RATE);
             photos[i].setFitWidth(names[i].getFont().getSize() * PHOTO_RESIZABLE_RATE);
         }
-
-        randomizeAction = new RandomizeAction(filePath, resultFilePath, teamSize, needBalance, teamLabel.getText());
-        teamsCount = randomizeAction.teamNumbers.size();
     }
 
     public void setFullScreenIfNeeded(boolean isNeed) {
@@ -277,13 +295,13 @@ public class PreviewController implements IController {
         this.textColor = value;
     }
 
-    public void setTeamSize(int teamSize) {
-        this.teamSize = teamSize;
+    public void setTeamSizePreference(int teamSize) {
+        this.teamSizePreference = teamSize;
         initStartIndex();
     }
 
     private void initStartIndex() {
-        switch (this.teamSize) {
+        switch (this.teamSizePreference) {
             case (2):
                 this.startIndex = 3;
                 break;
@@ -303,7 +321,7 @@ public class PreviewController implements IController {
 
     private Image getPhoto(Player player) {
 
-        return new Image(Path.FILE + pathToPhoto + "//" + player.number + FileExtensions.PNG);
+        return new Image(Paths.FILE + pathToPhoto + "//" + player.number + FileExtensions.PNG);
     }
 
     private void addEvents() {
@@ -325,6 +343,20 @@ public class PreviewController implements IController {
         appStage.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             if (fullScreenHotKey.match(event)) {
                 appStage.setFullScreen(true);
+            }
+        });
+
+        final KeyCombination nextButtonHotKey = new KeyCodeCombination(KeyCode.RIGHT);
+        appStage.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (nextButtonHotKey.match(event)) {
+                handleNextButtonAction(new ActionEvent());
+            }
+        });
+
+        final KeyCombination previousButtonHotKey = new KeyCodeCombination(KeyCode.LEFT);
+        appStage.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (previousButtonHotKey.match(event)) {
+                handlePreviousButtonAction(new ActionEvent());
             }
         });
     }

@@ -100,7 +100,7 @@
                </font>
             </Text>
             <Line endX="343.0" layoutX="304.0" layoutY="373.0" opacity="0.51" startX="-253.0" />
-            <ProgressBar fx:id="progress" layoutX="228.0" layoutY="673.0" opacity="0.5" prefHeight="23.0" prefWidth="273.0" progress="0.0" />
+            <ProgressBar fx:id="progress" layoutX="220.0" layoutY="673.0" opacity="0.5" prefHeight="23.0" prefWidth="281.0" progress="0.0" />
             <Text fx:id="messageField" layoutX="228.0" layoutY="710.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Выберите список участников..." wrappingWidth="296.9999985694885">
                <font>
                   <Font name="Playbill" size="12.0" />

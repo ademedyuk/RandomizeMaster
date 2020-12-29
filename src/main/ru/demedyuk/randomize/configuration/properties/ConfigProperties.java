@@ -4,9 +4,9 @@ public enum ConfigProperties {
 
     PLAYERS_FILE("players.file.path"),
     RESULT_FILE("result.file.path"),
-    USE_BALANSE("usePhoto.value"),
+    USE_BALANSE("useBalanse.value"),
     USE_PHOTO("usePhoto.value"),
-    PHOTO_DIRECTORY_FILE("input.file.path"),
+    PHOTO_DIRECTORY_FILE("photo.directory.path"),
 
     BACKGROUD_FILE("input.file.path"),
     TEXT_COLOR("textColor.value"),
