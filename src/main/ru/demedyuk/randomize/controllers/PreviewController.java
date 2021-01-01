@@ -24,6 +24,7 @@ import ru.demedyuk.randomize.constants.FileExtensions;
 import ru.demedyuk.randomize.constants.Paths;
 import ru.demedyuk.randomize.models.Gender;
 import ru.demedyuk.randomize.models.Player;
+import ru.demedyuk.randomize.models.files.InputFileStates;
 
 import java.io.File;
 import java.io.IOException;
@@ -126,6 +127,7 @@ public class PreviewController implements IController {
     private ImageView[] photos;
 
     private int currentPageIndex = 0;
+    private InputFileStates state;
 
     @FXML
     void handleStartButtonAction(ActionEvent event) {
@@ -158,7 +160,7 @@ public class PreviewController implements IController {
 
         int index = 0;
         for (Player player : finalTeams.get(currentPageIndex - 1)) {
-            names[index + this.startIndex].setText(player.number + " " + player.firstName + " " + player.lastName);
+            showNames(player, index);
             if (this.usePhoto)
                 photos[index + this.startIndex].setImage(getPhoto(player));
             imageView.setPreserveRatio(true);
@@ -168,6 +170,25 @@ public class PreviewController implements IController {
 
         teamLabel.setText(this.teamTitle + " " + currentPageIndex);
         setVisibleTablaOfPlayers(finalTeams.get(currentPageIndex - 1).size(), this.startIndex, true);
+    }
+
+    private void showNames(Player player, int index) {
+        if (this.state.equals(InputFileStates.FIRTSNAME)) {
+            names[index + this.startIndex].setText(player.firstName);
+            return;
+        }
+
+        if (this.state.equals(InputFileStates.FIRTSNAME_LASTNAME)
+                || this.state.equals(InputFileStates.FIRTSNAME_LASTNAME_GENDER)) {
+            names[index + this.startIndex].setText(player.firstName + " " +  player.lastName);
+            return;
+        }
+
+        if (this.state.equals(InputFileStates.NUMBER_FIRTSNAME_LASTNAME)
+                || this.state.equals(InputFileStates.NUMBER_FIRTSNAME_LASTNAME_GENDER)) {
+            names[index + this.startIndex].setText(player.number + " " + player.firstName + " " + player.lastName);
+            return;
+        }
     }
 
     private void cleanTable() {
@@ -316,6 +337,10 @@ public class PreviewController implements IController {
     public void setTeamSizePreference(int teamSize) {
         this.teamSizePreference = teamSize;
         initStartIndex();
+    }
+
+    public void setState(InputFileStates value) {
+        this.state = value;
     }
 
     private void initStartIndex() {

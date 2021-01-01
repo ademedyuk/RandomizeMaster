@@ -14,6 +14,7 @@ public class InputFileReader {
 
     private String filePath;
     private List<Player> allPlayers = new ArrayList<>();
+    private InputFileStates state = NOT_VALID;
 
     public InputFileReader(String filePath) {
         this.filePath = filePath;
@@ -61,10 +62,15 @@ public class InputFileReader {
                 throw new IllegalArgumentException("Проверьте корректность файла с участниками");
             }
         }
+
+        this.state = etalon;
     }
 
     public List<Player> getAllPlayers() {
         return this.allPlayers;
+    }
+    public InputFileStates getState() {
+        return this.state;
     }
 
     private static boolean isInt(String string) {

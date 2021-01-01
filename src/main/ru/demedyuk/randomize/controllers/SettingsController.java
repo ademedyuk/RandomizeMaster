@@ -489,6 +489,7 @@ public class SettingsController implements IController {
         previewController.setTextColor(textColor.getValue());
         previewController.setTeamTitle(teamTitle.getText());
         previewController.setPathToPhoto(usePrivatePhoto.isSelected(), path_to_photo.getText());
+        previewController.setState(playersFile.getState());
         previewController.setTeams(randomizeAction.getResult());
         previewController.configureViewVisibleElements(appStage, backgroundImage);
 
