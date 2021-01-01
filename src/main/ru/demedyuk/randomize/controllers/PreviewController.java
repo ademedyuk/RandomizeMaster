@@ -341,14 +341,19 @@ public class PreviewController implements IController {
     private static final String GIRL_PNG = "girl" + FileExtensions.PNG;
 
     private Image getPhoto(Player player) {
-        String urlPhoto = pathToPhoto + "//" + player.number + FileExtensions.PNG;
+        String urlPhotoByNum = pathToPhoto + "//" + player.number + FileExtensions.PNG;
+        String urlPhotoByName = pathToPhoto + "//" + player.firstName + " " + player.lastName + FileExtensions.PNG;
         String urlCustomPhoto = pathToPhoto + "//";
 
-        boolean existsPhoto = java.nio.file.Paths.get(urlPhoto).toFile().exists();
-        boolean existsCustomPhoto = java.nio.file.Paths.get(urlCustomPhoto + BOY_PNG).toFile().exists() || java.nio.file.Paths.get(urlCustomPhoto + GIRL_PNG).toFile().exists();
+        String photoUrl = "";
+        if (java.nio.file.Paths.get(urlPhotoByName).toFile().exists())
+            photoUrl = urlPhotoByName;
+        else if (java.nio.file.Paths.get(urlPhotoByNum).toFile().exists())
+            photoUrl = urlPhotoByNum;
 
-        if (existsPhoto)
-            return new Image(Paths.FILE + urlPhoto);
+        boolean existsCustomPhoto = java.nio.file.Paths.get(urlCustomPhoto + BOY_PNG).toFile().exists() || java.nio.file.Paths.get(urlCustomPhoto + GIRL_PNG).toFile().exists();
+        if (!photoUrl.equals(""))
+            return new Image(Paths.FILE + photoUrl);
         else if (existsCustomPhoto)
             return player.gender.equals(Gender.BOY) ?
                     new Image(Paths.FILE + urlCustomPhoto + BOY_PNG) : new Image(Paths.FILE + urlCustomPhoto + GIRL_PNG);
@@ -363,7 +368,7 @@ public class PreviewController implements IController {
     private KeyCombination previousButtonHotKey;
 
     private void addHotkeysEvents() {
-        restartHotKey = new KeyCodeCombination(KeyCode.R, KeyCombination.SHIFT_DOWN);
+        restartHotKey = new KeyCodeCombination(KeyCode.R, KeyCombination.CONTROL_DOWN);
 
         appStage.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             if (restartHotKey.match(event)) {
@@ -377,7 +382,7 @@ public class PreviewController implements IController {
             }
         });
 
-        fullScreenHotKey = new KeyCodeCombination(KeyCode.F, KeyCombination.SHIFT_DOWN);
+        fullScreenHotKey = new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN);
         appStage.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             if (fullScreenHotKey.match(event)) {
                 appStage.setFullScreen(true);

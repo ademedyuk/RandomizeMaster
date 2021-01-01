@@ -135,8 +135,8 @@ public class RandomizeAction {
 
         DocxGenerate docxGenerate = new DocxGenerate(this.resultFilePath.replace(FileExtensions.DOCX, ""));
 
-        for (int i = 0; i < finalTeams.size(); i++) {
-            docxGenerate.addOneTeamInfo(this.teamLabel + " " + (i + 1), finalTeams.get(i));
+        for (int i = 1; i <= finalTeams.size(); i++) {
+            docxGenerate.addOneTeamInfo(this.teamLabel + " " + i, finalTeams.get(i-1));
         }
 
         docxGenerate.generate();

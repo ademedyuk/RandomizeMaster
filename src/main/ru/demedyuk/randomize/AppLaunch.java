@@ -58,7 +58,7 @@ public class AppLaunch extends Application {
     }
 
     private void addEvent() {
-        final KeyCombination openDir = new KeyCodeCombination(KeyCode.Q, KeyCombination.SHIFT_DOWN);
+        final KeyCombination openDir = new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN);
 
         appStage.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             if (openDir.match(event)) {

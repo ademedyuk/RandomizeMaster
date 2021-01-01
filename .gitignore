@@ -1,5 +1,5 @@
 target/
 
 builds/environment/
-builds/launch4jconfigs/
+builds/configs
 out/artifacts/

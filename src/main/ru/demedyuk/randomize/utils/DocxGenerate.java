@@ -18,7 +18,7 @@ public class DocxGenerate {
     private String path;
 
     private static final String TITLE = "Title";
-    private static final String DATE_FORMAT_PATTERN = "yyyy-MM-dd HH-mm-ss";
+    private static final String DATE_FORMAT_PATTERN = "dd-MM-YYYY'_time_'HH-mm-ss";
 
     public DocxGenerate(String path) {
         try {
