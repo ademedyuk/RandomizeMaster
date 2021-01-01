@@ -1,8 +1,9 @@
-package ru.demedyuk.randomize.utils;
+package ru.demedyuk.randomize.utils.actions;
 
 import ru.demedyuk.randomize.constants.FileExtensions;
 import ru.demedyuk.randomize.models.Gender;
 import ru.demedyuk.randomize.models.Player;
+import ru.demedyuk.randomize.utils.DocxGenerate;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,9 +12,9 @@ import java.util.Random;
 
 public class RandomizeAction {
 
-    private int teamSize;
     private String resultFilePath;
     private String teamLabel;
+    private int teamSize;
 
     //списки нераспределенных игроков
     private List<Player> allPlayers;
@@ -35,23 +36,26 @@ public class RandomizeAction {
         if (needBalance) {
             initPlayersBySex();
             calculateTeams();
-            doRandomBySex();
+            doRandomByGender();
         } else {
             calculateTeams();
             doRandom();
         }
 
-        Thread saveResultsThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                saveResults();
-            }
-        });
+        Thread saveResultsThread = new Thread(this::saveResults);
         saveResultsThread.start();
     }
 
-    public HashMap<Integer, List<Player>> getResult() {
-        return finalTeams;
+    private void initPlayersBySex() {
+        for (Player player : allPlayers) {
+            if (player.gender.equals(Gender.BOY))
+                boysList.add(player);
+            else if (player.gender.equals(Gender.GIRL))
+                girlsList.add(player);
+            else if (player.gender.equals(Gender.NONE)) {
+                throw new IllegalArgumentException("Пол участников не указан");
+            }
+        }
     }
 
     private void calculateTeams() {
@@ -82,7 +86,21 @@ public class RandomizeAction {
         }
     }
 
-    private void doRandomBySex() {
+    private void doRandom() {
+        for (int teamIndex = 0; teamIndex < teamNumbers.size(); teamIndex++) {
+            List<Player> randomTeam = new ArrayList<>();
+
+            for (int i = 0; i < teamNumbers.get(teamIndex); i++) {
+                Player randomPlayer = allPlayers.get(new Random().nextInt(allPlayers.size()));
+                randomTeam.add(randomPlayer);
+                allPlayers.remove(randomPlayer);
+            }
+
+            finalTeams.put(teamIndex, randomTeam);
+        }
+    }
+
+    private void doRandomByGender() {
         while (allPlayers.size() != 0) {
             for (int teamIndex : teamNumbers.keySet()) {
                 finalTeams.putIfAbsent(teamIndex, new ArrayList<>());
@@ -107,18 +125,8 @@ public class RandomizeAction {
         }
     }
 
-    private void doRandom() {
-        for (int teamIndex = 0; teamIndex < teamNumbers.size(); teamIndex++) {
-            List<Player> randomTeam = new ArrayList<>();
-
-            for (int i = 0; i < teamNumbers.get(teamIndex); i++) {
-                Player randomPlayer = allPlayers.get(new Random().nextInt(allPlayers.size()));
-                randomTeam.add(randomPlayer);
-                allPlayers.remove(randomPlayer);
-            }
-
-            finalTeams.put(teamIndex, randomTeam);
-        }
+    public HashMap<Integer, List<Player>> getResult() {
+        return finalTeams;
     }
 
     private void saveResults() {
@@ -128,20 +136,9 @@ public class RandomizeAction {
         DocxGenerate docxGenerate = new DocxGenerate(this.resultFilePath.replace(FileExtensions.DOCX, ""));
 
         for (int i = 0; i < finalTeams.size(); i++) {
-            docxGenerate.addOneTeamInfo(this.teamLabel + " " + (int) (i + 1), finalTeams.get(i));
+            docxGenerate.addOneTeamInfo(this.teamLabel + " " + (i + 1), finalTeams.get(i));
         }
 
         docxGenerate.generate();
-    }
-
-    private void initPlayersBySex() {
-        for (Player player : allPlayers) {
-            if (player.gender.equals(Gender.BOY))
-                boysList.add(player);
-            else if (player.gender.equals(Gender.GIRL))
-                girlsList.add(player);
-            else if (player.gender.equals(Gender.NONE))
-                throw new IllegalArgumentException("Во входном файле не указан пол");
-        }
     }
 }

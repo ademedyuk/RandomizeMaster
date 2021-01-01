@@ -31,9 +31,11 @@ public class Player {
         this.firstName = firstName;
         this.lastName = lastName;
         this.number = number;
+        this.gender = Gender.getGenderByID(gender);
     }
 
     public void setGender(Gender gender) {
         this.gender = gender;
     }
+
 }

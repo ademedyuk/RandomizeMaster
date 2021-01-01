@@ -1,4 +1,4 @@
-package ru.demedyuk.randomize.utils;
+package ru.demedyuk.randomize.utils.actions;
 
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Text;

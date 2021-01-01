@@ -1,4 +1,4 @@
-package ru.demedyuk.randomize.models;
+package ru.demedyuk.randomize.models.files;
 
 public enum InputFileStates {
 

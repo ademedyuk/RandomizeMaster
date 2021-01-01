@@ -1,15 +1,14 @@
-package ru.demedyuk.randomize.models;
+package ru.demedyuk.randomize.models.files;
+
+import ru.demedyuk.randomize.models.Gender;
+import ru.demedyuk.randomize.models.Player;
+import ru.demedyuk.randomize.utils.FileUtils;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import static ru.demedyuk.randomize.models.InputFileStates.*;
-import static ru.demedyuk.randomize.models.InputFileStates.FIRTSNAME;
-import static ru.demedyuk.randomize.models.InputFileStates.NOT_VALID;
+import static ru.demedyuk.randomize.models.files.InputFileStates.*;
 
 public class InputFileReader {
 
@@ -20,8 +19,8 @@ public class InputFileReader {
         this.filePath = filePath;
     }
 
-    public void validateDocument() {
-        List<String> lines = getTextFromFile();
+    public void validateDocument() throws IOException {
+        List<String> lines = FileUtils.getTextFromFile(this.filePath);
         List<InputFileStates> states = new ArrayList<>();
 
         for (String line : lines) {
@@ -52,33 +51,20 @@ public class InputFileReader {
                     allPlayers.add(new Player(subStr[0], subStr[1], subStr[2], subStr[3]));
                     break;
                 default:
-                    throw new IllegalArgumentException("Невалидый файл");
+                    throw new IllegalArgumentException("Проверьте корректность файла с участниками");
             }
         }
 
         InputFileStates etalon = states.get(0);
         for (InputFileStates state : states) {
             if (!state.equals(etalon)) {
-                throw new IllegalArgumentException("Невалидый файл");
+                throw new IllegalArgumentException("Проверьте корректность файла с участниками");
             }
         }
     }
 
     public List<Player> getAllPlayers() {
         return this.allPlayers;
-    }
-
-    private List<String> getTextFromFile() {
-        Path file = Paths.get(this.filePath);
-        List<String> lines = null;
-
-        try {
-            lines = Files.readAllLines(file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return lines;
     }
 
     private static boolean isInt(String string) {

@@ -8,7 +8,7 @@ public enum ConfigProperties {
     USE_PHOTO("usePhoto.value"),
     PHOTO_DIRECTORY_FILE("photo.directory.path"),
 
-    BACKGROUD_FILE("input.file.path"),
+    BACKGROUD_FILE("background.file.path"),
     TEXT_COLOR("textColor.value"),
     TEAM_NAME("teamName.value"),
     SCREEN_SIZE("screenSize.value"),

@@ -16,13 +16,16 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import org.apache.commons.io.FilenameUtils;
 import ru.demedyuk.randomize.configuration.RuntimeSettings;
 import ru.demedyuk.randomize.configuration.screen.Screen;
 import ru.demedyuk.randomize.configuration.screen.ScreenProperties;
 import ru.demedyuk.randomize.constants.FileExtensions;
 import ru.demedyuk.randomize.constants.Paths;
+import ru.demedyuk.randomize.models.Gender;
 import ru.demedyuk.randomize.models.Player;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
@@ -40,6 +43,7 @@ public class PreviewController implements IController {
     private int teamsCount;
     private int startIndex; //индекс начала отображения игроков
 
+    private boolean usePhoto;
     private String pathToPhoto;
     private String teamTitle;
 
@@ -155,7 +159,8 @@ public class PreviewController implements IController {
         int index = 0;
         for (Player player : finalTeams.get(currentPageIndex - 1)) {
             names[index + this.startIndex].setText(player.number + " " + player.firstName + " " + player.lastName);
-            photos[index + this.startIndex].setImage(getPhoto(player));
+            if (this.usePhoto)
+                photos[index + this.startIndex].setImage(getPhoto(player));
             imageView.setPreserveRatio(true);
 
             index++;
@@ -163,6 +168,13 @@ public class PreviewController implements IController {
 
         teamLabel.setText(this.teamTitle + " " + currentPageIndex);
         setVisibleTablaOfPlayers(finalTeams.get(currentPageIndex - 1).size(), this.startIndex, true);
+    }
+
+    private void cleanTable() {
+        for (int i = 0; i < names.length; i++) {
+            names[i].setText("");
+            photos[i].setImage(null);
+        }
     }
 
     public void setVisibleTablaOfPlayers(int size, int startIndexValue, boolean value) {
@@ -173,13 +185,13 @@ public class PreviewController implements IController {
         }
     }
 
-    public void setUnvisibleTableOfPlayers() {
-        setVisibleTablaOfPlayers(names.length, 0, false);
-    }
-
     public void setVisibleNavigateButtons(boolean value) {
         nextButton.setVisible(value);
         previousButton.setVisible(value);
+    }
+
+    public void setUnvisibleTableOfPlayers() {
+        setVisibleTablaOfPlayers(names.length, 0, false);
     }
 
     public void setUnvisibleNavigateButtons() {
@@ -189,13 +201,6 @@ public class PreviewController implements IController {
     public PreviewController setScreenResolution(Screen value) {
         this.screenResolutionProperties = value.properties;
         return this;
-    }
-
-    private void cleanTable() {
-        for (int i = 0; i < teamSizePreference + 1; i++) {
-            names[i + this.startIndex].setText("");
-            photos[i + this.startIndex].setImage(null);
-        }
     }
 
     public void setPrimaryStage(Stage primaryStage) {
@@ -212,8 +217,20 @@ public class PreviewController implements IController {
     }
 
     public void configureViewVisibleElements(Stage stage, Image image) {
+        previousButton.setOnKeyReleased((event) -> {
+            if (event.getCode() == new KeyCodeCombination(KeyCode.LEFT).getCode()) {
+                handlePreviousButtonAction(new ActionEvent());
+            }
+        });
+
+        nextButton.setOnKeyReleased((event) -> {
+            if (event.getCode() == new KeyCodeCombination(KeyCode.RIGHT).getCode()) {
+                handleNextButtonAction(new ActionEvent());
+            }
+        });
+
         this.appStage = stage;
-        addEvents();
+        addHotkeysEvents();
 
         names = new Label[]{name1, name2, name3, name4, name5, name6, name7, name8, name9};
         photos = new ImageView[]{photo1, photo2, photo3, photo4, photo5, photo6, photo7, photo8, photo9};
@@ -287,7 +304,8 @@ public class PreviewController implements IController {
         imageView.setFitWidth(javafx.stage.Screen.getPrimary().getBounds().getMaxX() * RESIZABLE_RATE);
     }
 
-    public void setPathToPhoto(String pathToPhoto) {
+    public void setPathToPhoto(boolean usePhoto, String pathToPhoto) {
+        this.usePhoto = usePhoto;
         this.pathToPhoto = pathToPhoto;
     }
 
@@ -319,13 +337,33 @@ public class PreviewController implements IController {
         }
     }
 
-    private Image getPhoto(Player player) {
+    private static final String BOY_PNG = "boy" + FileExtensions.PNG;
+    private static final String GIRL_PNG = "girl" + FileExtensions.PNG;
 
-        return new Image(Paths.FILE + pathToPhoto + "//" + player.number + FileExtensions.PNG);
+    private Image getPhoto(Player player) {
+        String urlPhoto = pathToPhoto + "//" + player.number + FileExtensions.PNG;
+        String urlCustomPhoto = pathToPhoto + "//";
+
+        boolean existsPhoto = java.nio.file.Paths.get(urlPhoto).toFile().exists();
+        boolean existsCustomPhoto = java.nio.file.Paths.get(urlCustomPhoto + BOY_PNG).toFile().exists() || java.nio.file.Paths.get(urlCustomPhoto + GIRL_PNG).toFile().exists();
+
+        if (existsPhoto)
+            return new Image(Paths.FILE + urlPhoto);
+        else if (existsCustomPhoto)
+            return player.gender.equals(Gender.BOY) ?
+                    new Image(Paths.FILE + urlCustomPhoto + BOY_PNG) : new Image(Paths.FILE + urlCustomPhoto + GIRL_PNG);
+        else
+            return player.gender.equals(Gender.BOY) ?
+                    new Image(getClass().getClassLoader().getResourceAsStream("images/" + BOY_PNG)) : new Image(getClass().getClassLoader().getResourceAsStream("images/" + GIRL_PNG));
     }
 
-    private void addEvents() {
-        final KeyCombination restartHotKey = new KeyCodeCombination(KeyCode.R, KeyCombination.SHIFT_DOWN);
+    private KeyCombination restartHotKey;
+    private KeyCombination fullScreenHotKey;
+    private KeyCombination nextButtonHotKey;
+    private KeyCombination previousButtonHotKey;
+
+    private void addHotkeysEvents() {
+        restartHotKey = new KeyCodeCombination(KeyCode.R, KeyCombination.SHIFT_DOWN);
 
         appStage.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             if (restartHotKey.match(event)) {
@@ -339,31 +377,17 @@ public class PreviewController implements IController {
             }
         });
 
-        final KeyCombination fullScreenHotKey = new KeyCodeCombination(KeyCode.F, KeyCombination.SHIFT_DOWN);
+        fullScreenHotKey = new KeyCodeCombination(KeyCode.F, KeyCombination.SHIFT_DOWN);
         appStage.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             if (fullScreenHotKey.match(event)) {
                 appStage.setFullScreen(true);
-            }
-        });
-
-        final KeyCombination nextButtonHotKey = new KeyCodeCombination(KeyCode.RIGHT);
-        appStage.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
-            if (nextButtonHotKey.match(event)) {
-                handleNextButtonAction(new ActionEvent());
-            }
-        });
-
-        final KeyCombination previousButtonHotKey = new KeyCodeCombination(KeyCode.LEFT);
-        appStage.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
-            if (previousButtonHotKey.match(event)) {
-                handlePreviousButtonAction(new ActionEvent());
             }
         });
     }
 
     @Override
     public String getNextViewName() {
-        return "views/SettingsView.fxml";
+        return "views/SettingsView" + FileExtensions.FXML;
     }
 
     @Override
@@ -374,7 +398,6 @@ public class PreviewController implements IController {
         try {
             appStage.setScene(new Scene((Pane) loader.load()));
         } catch (IOException e) {
-            //TODO: залогировать
             e.printStackTrace();
         }
 

@@ -10,7 +10,6 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -23,9 +22,10 @@ import ru.demedyuk.randomize.configuration.properties.ConfigProperties;
 import ru.demedyuk.randomize.configuration.screen.Screen;
 import ru.demedyuk.randomize.constants.FileExtensions;
 import ru.demedyuk.randomize.constants.Paths;
-import ru.demedyuk.randomize.models.InputFileReader;
-import ru.demedyuk.randomize.utils.FIleUtils;
-import ru.demedyuk.randomize.utils.RandomizeAction;
+import ru.demedyuk.randomize.messages.About;
+import ru.demedyuk.randomize.models.files.InputFileReader;
+import ru.demedyuk.randomize.utils.FileUtils;
+import ru.demedyuk.randomize.utils.actions.RandomizeAction;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,27 +38,20 @@ import java.util.Properties;
 
 import static ru.demedyuk.randomize.configuration.properties.ConfigProperties.*;
 import static ru.demedyuk.randomize.constants.FileExtensions.*;
-import static ru.demedyuk.randomize.utils.FIleUtils.makeDirsIfNotExists;
-import static ru.demedyuk.randomize.utils.OutputMessageActions.showErrorMessageWithDefaultDelay;
+import static ru.demedyuk.randomize.constants.PaintColors.BLACK;
+import static ru.demedyuk.randomize.constants.PaintColors.GRAY;
+import static ru.demedyuk.randomize.utils.FileUtils.makeDirsIfNotExists;
+import static ru.demedyuk.randomize.utils.actions.OutputMessageActions.showErrorMessageWithDefaultDelay;
 
 public class SettingsController implements IController {
 
+    private static final double PROGRESS_VALUE = 0.25;
     private Stage appStage;
     private Properties props;
     private static String pathToConfig;
+    private static File pathToSettings;
 
     private static final String DEFAULT_PROPERTIES = "properties/default.properties";
-
-    private static String ABOUT_TEXT = "Randomize Master" +
-            System.lineSeparator() +
-            System.lineSeparator() +
-            "version " + AppLaunch.VERSION + " (" + AppLaunch.RELEASE_DATE + ")" +
-            System.lineSeparator() + System.lineSeparator() +
-            "by Andrey Demedyuk" +
-            System.lineSeparator() + System.lineSeparator() +
-            "vk: https://vk.com/andreydemedyuk" +
-            System.lineSeparator() +
-            "https://github.com/demedyuk/randomizeMaster";
 
     @FXML
     void fileActionHandler(ActionEvent event) {
@@ -129,7 +122,7 @@ public class SettingsController implements IController {
         dialog.setTitle("About");
         dialog.getIcons().add(new Image(getClass().getClassLoader().getResourceAsStream(AppLaunch.PATH_TO_LOGO)));
         VBox dialogVbox = new VBox(20);
-        dialogVbox.getChildren().add(new Text(ABOUT_TEXT));
+        dialogVbox.getChildren().add(new Text(About.ABOUT_TEXT));
         Scene dialogScene = new Scene(dialogVbox, 450, 200);
         dialog.setScene(dialogScene);
         dialog.show();
@@ -237,10 +230,10 @@ public class SettingsController implements IController {
                 "7 участников",
                 "8 участников");
         countOfPlayers.setValue("2 участника");
-        isBalansing.setSelected(true);
+        isBalansing.setSelected(false);
         usePrivatePhoto.setSelected(false);
-        label_photo.setFill(Paint.valueOf("DBDBDB"));
-        messageField.setText("Выберите файл с участниками...");
+        label_photo.setFill(GRAY);
+        messageField.setText("Выберите файл с участниками");
         teamTitle.setText("Команда");
 
         if (this.pathToConfig == null)
@@ -311,7 +304,7 @@ public class SettingsController implements IController {
     @FXML
     void usePrivatePhotoAction(ActionEvent event) {
         boolean value = usePrivatePhoto.isSelected();
-        label_photo.setFill(value ? Paint.valueOf("000000") : Paint.valueOf("DBDBDB"));
+        label_photo.setFill(value ? BLACK : GRAY);
         path_to_photo.setDisable(!value);
         selectPhotoButton.setDisable(!value);
         checkProgress();
@@ -319,41 +312,44 @@ public class SettingsController implements IController {
 
     private void checkProgress() {
         progress.setProgress(0);
-        if (background != null && !background.getText().isEmpty())
+
+        if (!background.getText().isEmpty())
             addProgressValue();
         else
-            messageField.setText("Выберите фон...");
+            messageField.setText("Выберите фон");
 
-        if (usePrivatePhoto.isSelected() && path_to_photo != null && !path_to_photo.getText().isEmpty())
+        if (!usePrivatePhoto.isSelected())
             addProgressValue();
-        else if (usePrivatePhoto.isSelected())
+        else if (usePrivatePhoto.isSelected() && !path_to_photo.getText().isEmpty())
+            addProgressValue();
+        else if (usePrivatePhoto.isSelected() && path_to_photo.getText().isEmpty())
             messageField.setText("Укажите каталог с личными фото");
 
-        if (ouput_info != null && !ouput_info.getText().isEmpty())
+        if (!ouput_info.getText().isEmpty())
             addProgressValue();
         else
-            messageField.setText("Выберите каталог для сохранения результата...");
+            messageField.setText("Выберите каталог для сохранения результата");
 
-        if (input_info != null && !input_info.getText().isEmpty())
+        if (!input_info.getText().isEmpty())
             addProgressValue();
         else
-            messageField.setText("Выберите файл с участниками...");
+            messageField.setText("Выберите файл с участниками");
 
-        if (progress.getProgress() == 1.0) {
+        if (progress.getProgress() >= 0.9) {
             messageField.setText("");
         }
 
     }
 
     private void addProgressValue() {
-        double fix_value = usePrivatePhoto.isSelected() ? 0.25 : 0.34;
-        progress.setProgress(progress.getProgress() + fix_value);
+        double fixValue = usePrivatePhoto.isSelected() ? PROGRESS_VALUE : 0.34;
+        progress.setProgress(progress.getProgress() + PROGRESS_VALUE);
     }
 
     @FXML
     void selectListOfPlayersButtonAction(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setInitialDirectory(FIleUtils.findInitialDirectory(input_info.getText(), "\\players\\"));
+        fileChooser.setInitialDirectory(FileUtils.findInitialDirectory(input_info.getText(), "\\players\\"));
         fileChooser.setTitle("Выберите список участников");
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("Участники", ALL_PREFIX + PLAYERS),
@@ -369,7 +365,7 @@ public class SettingsController implements IController {
     @FXML
     void selectResultDirectoryButtonAction(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setInitialDirectory(FIleUtils.findInitialDirectory(ouput_info.getText(), "\\results\\"));
+        fileChooser.setInitialDirectory(FileUtils.findInitialDirectory(ouput_info.getText(), "\\results\\"));
         fileChooser.setTitle("Каталог для сохранения результатов");
         fileChooser.setInitialFileName("result" + FileExtensions.DOCX);
         fileChooser.getExtensionFilters().addAll(
@@ -386,7 +382,6 @@ public class SettingsController implements IController {
 
     @FXML
     void screenResolutionAction(ActionEvent event) {
-        //TODO: не используется value
         HashMap<RadioButton, Boolean> map = new HashMap<RadioButton, Boolean>();
         map.put(_1920x1080_button, false);
         map.put(_1366x768_button, false);
@@ -407,7 +402,7 @@ public class SettingsController implements IController {
     @FXML
     void selectPhotoButtonAction(ActionEvent event) {
         DirectoryChooser directoryChooser = new DirectoryChooser();
-        directoryChooser.setInitialDirectory(FIleUtils.findInitialDirectory(path_to_photo.getText(), "\\photos\\"));
+        directoryChooser.setInitialDirectory(FileUtils.findInitialDirectory(path_to_photo.getText(), "\\photos\\"));
         directoryChooser.setTitle("Укажите каталог с фотографиями участников");
 
         File selectedFile = directoryChooser.showDialog(null);
@@ -421,10 +416,11 @@ public class SettingsController implements IController {
     @FXML
     void selectBackgroundImageButtonAction(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setInitialDirectory(FIleUtils.findInitialDirectory(background.getText(), "\\backgrounds\\"));
+        fileChooser.setInitialDirectory(FileUtils.findInitialDirectory(background.getText(), "\\backgrounds\\"));
         fileChooser.setTitle("Выберите фон");
-        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Изображения",
-                "*.jpg", "*.jpeg"));
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter(
+                "Изображения",
+                ALL_PREFIX + JPEG, ALL_PREFIX + JPG));
         File selectedFile = fileChooser.showOpenDialog(null);
 
         if (selectedFile != null) {
@@ -434,9 +430,9 @@ public class SettingsController implements IController {
     }
 
     @FXML
-    void handleLaunchButtonAction(ActionEvent event) throws IOException {
+    void handleLaunchButtonAction(ActionEvent event) {
+        checkProgress();
         if (progress.getProgress() < 0.99) {
-            //TODO: добавить вывод сообщения по таймеру
             return;
         }
 
@@ -445,13 +441,17 @@ public class SettingsController implements IController {
             return;
         }
 
-        InputFileReader playersFile = new InputFileReader(input_info.getText());
+        updateProps();
 
+        InputFileReader playersFile = new InputFileReader(input_info.getText());
 
         try {
             playersFile.validateDocument();
+        } catch (IOException e) {
+            e.printStackTrace();
+            messageField.setText("Ошибка чтения файла с участниками");
         } catch (IllegalArgumentException e) {
-            messageField.setText("Проверьте корректность входного файла");
+            messageField.setText("Файл с участниками составлен некорректно");
             return;
         }
 
@@ -488,7 +488,7 @@ public class SettingsController implements IController {
         previewController.setPrimaryStage(appStage);
         previewController.setTextColor(textColor.getValue());
         previewController.setTeamTitle(teamTitle.getText());
-        previewController.setPathToPhoto(path_to_photo.getText());
+        previewController.setPathToPhoto(usePrivatePhoto.isSelected(), path_to_photo.getText());
         previewController.setTeams(randomizeAction.getResult());
         previewController.configureViewVisibleElements(appStage, backgroundImage);
 
@@ -560,7 +560,6 @@ public class SettingsController implements IController {
         try {
             appStage.setScene(new Scene((Pane) loader.load()));
         } catch (IOException e) {
-            //TODO: залогировать
             e.printStackTrace();
         }
 

@@ -20,8 +20,8 @@ import static ru.demedyuk.randomize.constants.FileExtensions.FXML;
 
 public class AppLaunch extends Application {
 
-    public static final String VERSION = "1.0";
-    public static final String RELEASE_DATE = "28.12.2020";
+    public static final String VERSION = "1.3";
+    public static final String RELEASE_DATE = "01.01.2020";
 
     private Stage appStage;
 
@@ -43,8 +43,8 @@ public class AppLaunch extends Application {
         FXMLLoader loader = new FXMLLoader(locationUrl);
         appStage.setScene(new Scene((Pane) loader.load()));
         SettingsController settingsController = loader.<SettingsController>getController();
-        settingsController.initScene();
         settingsController.setPrimaryStage(primaryStage);
+        settingsController.initScene();
         addEvent();
     }
 

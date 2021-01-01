@@ -56,7 +56,7 @@
             </Text>
             <TextField fx:id="ouput_info" layoutX="201.0" layoutY="117.0" prefHeight="31.0" prefWidth="347.0" />
             <Button fx:id="selectResultDirectoryButton" layoutX="559.0" layoutY="117.0" mnemonicParsing="false" onAction="#selectResultDirectoryButtonAction" prefHeight="31.0" prefWidth="92.0" text="Обзор..." />
-            <Text layoutX="153.0" layoutY="414.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Фон:">
+            <Text layoutX="71.0" layoutY="414.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Фон:" textAlignment="RIGHT" wrappingWidth="114.06006383895874">
                <font>
                   <Font name="Playbill" size="15.0" />
                </font>
@@ -73,7 +73,7 @@
                </font>
             </Text>
             <RadioButton fx:id="_1024x768_button" layoutX="200.0" layoutY="631.0" mnemonicParsing="false" onAction="#screenResolutionAction" text="1024 x 768" />
-            <Text layoutX="154.0" layoutY="546.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Вид:">
+            <Text layoutX="77.0" layoutY="546.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Вид:" textAlignment="RIGHT" wrappingWidth="114.06006383895874">
                <font>
                   <Font name="Playbill" size="15.0" />
                </font>
@@ -100,20 +100,20 @@
                </font>
             </Text>
             <Line endX="343.0" layoutX="304.0" layoutY="373.0" opacity="0.51" startX="-253.0" />
-            <ProgressBar fx:id="progress" layoutX="220.0" layoutY="673.0" opacity="0.5" prefHeight="23.0" prefWidth="281.0" progress="0.0" />
-            <Text fx:id="messageField" layoutX="228.0" layoutY="710.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Выберите список участников..." wrappingWidth="296.9999985694885">
-               <font>
-                  <Font name="Playbill" size="12.0" />
-               </font>
-            </Text>
-            <Button fx:id="launch" layoutX="529.0" layoutY="669.0" mnemonicParsing="false" onAction="#handleLaunchButtonAction" prefHeight="31.0" prefWidth="125.0" text="Запуск" />
-            <ColorPicker fx:id="textColor" layoutX="202.0" layoutY="439.0" prefHeight="31.0" prefWidth="126.0" />
-            <Text layoutX="99.0" layoutY="459.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Цвет текста:" wrappingWidth="90.6181663274765">
+            <ProgressBar fx:id="progress" layoutX="199.0" layoutY="673.0" opacity="0.5" prefHeight="23.0" prefWidth="311.0" progress="0.0" />
+            <Text fx:id="messageField" layoutX="202.0" layoutY="712.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Выберите список участников..." wrappingWidth="311.0000035762787">
                <font>
                   <Font name="Playbill" size="15.0" />
                </font>
             </Text>
-            <Text layoutX="53.0" layoutY="505.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Название команды:" wrappingWidth="133.2055721282959">
+            <Button fx:id="launch" layoutX="529.0" layoutY="669.0" mnemonicParsing="false" onAction="#handleLaunchButtonAction" prefHeight="31.0" prefWidth="125.0" text="GO" />
+            <ColorPicker fx:id="textColor" layoutX="202.0" layoutY="439.0" prefHeight="31.0" prefWidth="126.0" />
+            <Text layoutX="76.0" layoutY="459.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Цвет текста:" textAlignment="RIGHT" wrappingWidth="114.06006383895874">
+               <font>
+                  <Font name="Playbill" size="15.0" />
+               </font>
+            </Text>
+            <Text layoutX="77.0" layoutY="505.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Алиас:" textAlignment="RIGHT" wrappingWidth="114.06006383895874">
                <font>
                   <Font name="Playbill" size="15.0" />
                </font>
