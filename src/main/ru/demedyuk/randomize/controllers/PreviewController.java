@@ -14,6 +14,7 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import org.apache.commons.io.FilenameUtils;
@@ -128,6 +129,7 @@ public class PreviewController implements IController {
 
     private int currentPageIndex = 0;
     private InputFileStates state;
+    private Font font;
 
     @FXML
     void handleStartButtonAction(ActionEvent event) {
@@ -283,15 +285,15 @@ public class PreviewController implements IController {
         nextButton.setLayoutY(screenResolutionProperties.nextButton.getLayoutY());
         nextButton.setFont(screenResolutionProperties.nextButton.getFont());
 
+        teamLabel.setFont(this.font);
         teamLabel.setLayoutX(screenResolutionProperties.width / 2 - teamLabel.getPrefWidth() / 2);
         teamLabel.setLayoutY(screenResolutionProperties.height * 0.03);
         teamLabel.setTextFill(this.textColor);
-        teamLabel.setFont(Font.font(screenResolutionProperties.fontSize * 1.2));
+        teamLabel.setFont(Font.font(this.font.getFamily(), this.font.getSize()*1.2));
         teamLabel.setText(this.teamTitle);
 
         //players
         for (int i = 0; i < 9; i++) {
-            names[i].setTextFill(this.textColor);
             names[i].setLayoutX(screenResolutionProperties.nameLabel.getLayoutX());
 
             if (i == 0) {
@@ -301,12 +303,14 @@ public class PreviewController implements IController {
             }
 
             names[i].setPrefWidth(screenResolutionProperties.width * 0.5);
-            names[i].setFont(Font.font(screenResolutionProperties.fontSize));
+            names[i].setFont(this.font);
+            names[i].setTextFill(this.textColor);
 
-            photos[i].setLayoutX(names[i].getLayoutX() - photos[i].getFitHeight() * PHOTO_RESIZABLE_RATE);
-            photos[i].setLayoutY(names[i].getLayoutY());
-            photos[i].setFitHeight(names[i].getFont().getSize() * PHOTO_RESIZABLE_RATE);
-            photos[i].setFitWidth(names[i].getFont().getSize() * PHOTO_RESIZABLE_RATE);
+            photos[i].setPreserveRatio(true);
+            photos[i].setFitHeight(this.font.getSize() * PHOTO_RESIZABLE_RATE);
+            photos[i].setFitWidth(this.font.getSize() * PHOTO_RESIZABLE_RATE);
+            photos[i].setLayoutX(names[i].getLayoutX() - photos[i].getFitWidth() * 1.3);
+            photos[i].setLayoutY(names[i].getLayoutY() + names[i].getPrefHeight()/2 - photos[i].getFitHeight()/2);
         }
     }
 
@@ -330,8 +334,9 @@ public class PreviewController implements IController {
         this.pathToPhoto = pathToPhoto;
     }
 
-    public void setTextColor(Color value) {
+    public void setTextSettings(Color value, Font font) {
         this.textColor = value;
+        this.font = font;
     }
 
     public void setTeamSizePreference(int teamSize) {

@@ -10,6 +10,7 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -32,9 +33,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import static ru.demedyuk.randomize.configuration.properties.ConfigProperties.*;
 import static ru.demedyuk.randomize.constants.FileExtensions.*;
@@ -49,7 +48,6 @@ public class SettingsController implements IController {
     private Stage appStage;
     private Properties props;
     private static String pathToConfig;
-    private static File pathToSettings;
 
     private static final String DEFAULT_PROPERTIES = "properties/default.properties";
 
@@ -66,6 +64,7 @@ public class SettingsController implements IController {
         isBalansing.setSelected(false);
         usePrivatePhoto.setSelected(false);
         path_to_photo.setText("");
+
         checkProgress();
         usePrivatePhotoAction(new ActionEvent());
 
@@ -73,6 +72,24 @@ public class SettingsController implements IController {
         updateProps();
     }
 
+    private void scanFonts() {
+        File folder = new File(".\\fonts");
+        File[] listOfFiles = folder.listFiles();
+
+        List<String> fonts = new ArrayList<String>();
+
+        for (File file : listOfFiles) {
+            if (file.isFile() && file.getName().contains(".ttf")) {
+                String fileName = file.getName();
+                String fontName = fileName.substring(0, fileName.lastIndexOf("."));
+                fonts.add(fontName);
+            }
+        }
+
+        textFont.getItems().add("Default");
+        textFont.getItems().addAll(fonts);
+        textFont.setValue("Default");
+    }
 
     @FXML
     void fileOpenActionHandler(ActionEvent event) {
@@ -137,11 +154,12 @@ public class SettingsController implements IController {
         setPropertyIfExists(PLAYERS_FILE, input_info.getText());
         setPropertyIfExists(RESULT_FILE, ouput_info.getText());
         setPropertyIfExists(USE_BALANSE, isBalansing.isSelected() ? "true" : "false");
-        setPropertyIfExists(USE_PHOTO, isBalansing.isSelected() ? "true" : "false");
+        setPropertyIfExists(USE_PHOTO, usePrivatePhoto.isSelected() ? "true" : "false");
         setPropertyIfExists(PHOTO_DIRECTORY_FILE, path_to_photo.getText());
 
         setPropertyIfExists(BACKGROUD_FILE, background.getText());
         setPropertyIfExists(TEXT_COLOR, textColor.getValue().toString());
+        setPropertyIfExists(TEXT_FONT, textFont.getValue());
         setPropertyIfExists(TEAM_NAME, teamTitle.getText());
         setPropertyIfExists(SCREEN_SIZE, getScreen().name);
         setPropertyIfExists(SCREEN_IS_FULL, fullScrene.isSelected() ? "true" : "false");
@@ -178,6 +196,9 @@ public class SettingsController implements IController {
 
     @FXML
     private ChoiceBox<String> countOfPlayers = new ChoiceBox<String>();
+
+    @FXML
+    private ChoiceBox<String> textFont = new ChoiceBox<String>();
 
     @FXML
     private CheckBox isBalansing;
@@ -236,6 +257,8 @@ public class SettingsController implements IController {
         messageField.setText("Выберите файл с участниками");
         teamTitle.setText("Команда");
 
+        scanFonts();
+
         if (this.pathToConfig == null)
             this.pathToConfig = getClass().getClassLoader().getResource(DEFAULT_PROPERTIES).getFile();
 
@@ -260,7 +283,16 @@ public class SettingsController implements IController {
 
             background.setText(getPropertyIfExists(BACKGROUD_FILE));
             textColor.setValue(Color.valueOf(getPropertyIfExists(TEXT_COLOR).equals("") ? Color.WHITE.toString() : getPropertyIfExists(TEXT_COLOR)));
+
+            String textFontValue = getPropertyIfExists(TEXT_FONT);
+            if (!textFontValue.equals("")) {
+                for (String item : this.textFont.getItems()) {
+                    if (textFontValue.equals(item))
+                        textFont.setValue(textFontValue);
+                }
+            }
             teamTitle.setText(getPropertyIfExists(TEAM_NAME));
+
             setScreen(getPropertyIfExists(SCREEN_SIZE));
             if (getPropertyIfExists(SCREEN_SIZE).equals("false") ? true : false) {
                 inWindow.setSelected(true);
@@ -479,6 +511,20 @@ public class SettingsController implements IController {
         RuntimeSettings.SETTING_VIEW_LAST_WIDTH = appStage.getWidth();
         RuntimeSettings.SETTING_VIEW_LAST_HEIGHT = appStage.getHeight();
 
+        Screen screen = getScreen();
+        Font font = Font.loadFont(getClass().getClassLoader().getResourceAsStream("fonts/defaultFont.ttf"),
+                screen.properties.fontSize);
+
+        if (!textFont.getValue().equals("Default")) {
+            try {
+                String url = ".//fonts//" + textFont.getValue() + ".ttf";
+                String absolutePath = java.nio.file.Paths.get(url).toFile().getAbsolutePath();
+                font = Font.loadFont(Paths.FILE + absolutePath, screen.properties.fontSize);
+            } catch (Exception e) {
+                messageField.setText("Ошибка при загрузке выбранного шрифта");
+            }
+        }
+
         PreviewController previewController = initNextView(event, getNextViewName());
 
         Image backgroundImage = new Image(Paths.FILE + background.getText());
@@ -486,7 +532,7 @@ public class SettingsController implements IController {
         previewController.setScreenResolution(getScreen());
         previewController.setTeamSizePreference(teamSize);
         previewController.setPrimaryStage(appStage);
-        previewController.setTextColor(textColor.getValue());
+        previewController.setTextSettings(textColor.getValue(), font);
         previewController.setTeamTitle(teamTitle.getText());
         previewController.setPathToPhoto(usePrivatePhoto.isSelected(), path_to_photo.getText());
         previewController.setState(playersFile.getState());

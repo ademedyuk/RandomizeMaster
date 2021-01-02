@@ -32,7 +32,7 @@ public enum Screen {
             .setPreviousButtonLayouts(1574, 955)
             .setNextButtonLayouts(1730, 955)
             .setPrefSizeSwitchButtons(145, 39)
-            .setFontSwitchButtons(Font.font(18))
+            .setFontSwitchButtons(Font.font(25))
             .setNameLabel(495, 167)
             .setNameCoefficientY(30));
 

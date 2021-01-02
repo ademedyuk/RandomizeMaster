@@ -10,6 +10,7 @@ public enum ConfigProperties {
 
     BACKGROUD_FILE("background.file.path"),
     TEXT_COLOR("textColor.value"),
+    TEXT_FONT("textFont.value"),
     TEAM_NAME("teamName.value"),
     SCREEN_SIZE("screenSize.value"),
     SCREEN_IS_FULL("screenIsFull.value");

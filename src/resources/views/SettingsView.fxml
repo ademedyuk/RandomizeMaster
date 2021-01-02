@@ -108,7 +108,7 @@
             </Text>
             <Button fx:id="launch" layoutX="529.0" layoutY="669.0" mnemonicParsing="false" onAction="#handleLaunchButtonAction" prefHeight="31.0" prefWidth="125.0" text="GO" />
             <ColorPicker fx:id="textColor" layoutX="202.0" layoutY="439.0" prefHeight="31.0" prefWidth="126.0" />
-            <Text layoutX="76.0" layoutY="459.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Цвет текста:" textAlignment="RIGHT" wrappingWidth="114.06006383895874">
+            <Text layoutX="76.0" layoutY="459.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Текст:" textAlignment="RIGHT" wrappingWidth="114.06006383895874">
                <font>
                   <Font name="Playbill" size="15.0" />
                </font>
@@ -119,6 +119,7 @@
                </font>
             </Text>
             <TextField fx:id="teamTitle" layoutX="202.0" layoutY="484.0" prefHeight="31.0" prefWidth="350.0" />
+            <ChoiceBox fx:id="textFont" layoutX="347.0" layoutY="439.0" prefHeight="31.0" prefWidth="206.0" />
          </children>
       </Pane>
   </children>
