@@ -21,7 +21,6 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import javafx.util.converter.IntegerStringConverter;
-import ru.demedyuk.randomize.constants.FileExtensions;
 import ru.demedyuk.randomize.models.Gender;
 import ru.demedyuk.randomize.models.Player;
 import ru.demedyuk.randomize.models.files.InputFileReader;
