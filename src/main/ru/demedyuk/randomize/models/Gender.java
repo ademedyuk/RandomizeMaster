@@ -1,16 +1,37 @@
 package ru.demedyuk.randomize.models;
 
 public enum Gender {
-    NONE,
-    GIRL,
-    BOY;
+
+    NONE("none"),
+    GIRL("Girl"),
+    BOY("Boy");
+
+    private String stringValue;
+
+    Gender(String stringValue) {
+        this.stringValue = stringValue;
+    }
 
     public static Gender getGenderByID(String value) {
-        if (value.equals("G") || value.equals("Д") || value.equals("W"))
+        if (value.equals("G") || value.equals("Д") || value.equals("W") || value.equals("Girl"))
             return Gender.GIRL;
-        if (value.equals("B") || value.equals("М") || value.equals("M"))
+        if (value.equals("B") || value.equals("М") || value.equals("M") || value.equals("Boy"))
             return Gender.BOY;
 
         return Gender.NONE;
+    }
+
+    @Override
+    public String toString() {
+        return this.stringValue;
+    }
+
+    public String toOutputValue() {
+        if (this == Gender.GIRL)
+            return "G";
+        if (this == Gender.BOY)
+            return "B";
+
+        return "";
     }
 }

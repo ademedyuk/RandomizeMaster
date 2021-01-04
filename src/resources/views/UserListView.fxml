@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="818.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.demedyuk.randomize.controllers.UserListController">
+   <children>
+      <TableView fx:id="table" layoutX="1.0" layoutY="93.0" prefHeight="512.0" prefWidth="599.0">
+        <columns>
+          <TableColumn fx:id="numberColumn" prefWidth="74.0" text="номер" />
+          <TableColumn fx:id="firstNameColumn" prefWidth="168.0" text="Имя" />
+            <TableColumn fx:id="lastNameColumn" prefWidth="244.0" text="Фамилия" />
+            <TableColumn fx:id="genderColumn" minWidth="0.0" prefWidth="112.0" text="пол" />
+        </columns>
+      </TableView>
+      <Button fx:id="addItemButton" layoutX="1.0" layoutY="605.0" mnemonicParsing="false" onAction="#addItemButtonHandler" prefHeight="31.0" prefWidth="36.0" text="+" />
+      <Button fx:id="deleteItemButton" layoutX="37.0" layoutY="605.0" mnemonicParsing="false" onAction="#deleteItemButtonHandler" prefHeight="31.0" prefWidth="36.0" text="-" />
+      <TextField fx:id="pathToPlayersField" editable="false" layoutX="151.0" layoutY="27.0" prefHeight="31.0" prefWidth="419.0" />
+      <Text layoutX="19.0" layoutY="48.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Файл с игроками:" wrappingWidth="128.6708984375" />
+      <Button fx:id="saveButton" layoutX="505.0" layoutY="757.0" mnemonicParsing="false" onAction="#saveButtonActionHandler" prefHeight="31.0" prefWidth="80.0" text="Save" />
+      <Button fx:id="cancelButton" layoutX="420.0" layoutY="757.0" mnemonicParsing="false" onAction="#cancelButtonActionHandler" prefHeight="31.0" prefWidth="80.0" text="Cancel" />
+      <Button fx:id="okButton" layoutX="335.0" layoutY="757.0" mnemonicParsing="false" onAction="#okButtonActionHandler" prefHeight="31.0" prefWidth="80.0" text="OK" />
+      <Text fx:id="countLabel" layoutX="415.0" layoutY="656.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Всего игроков:" textAlignment="RIGHT" wrappingWidth="128.67088615894318" />
+      <Text fx:id="countField" layoutX="544.0" layoutY="658.0" strokeType="OUTSIDE" strokeWidth="0.0" text="000" textAlignment="CENTER" wrappingWidth="55.99999523162842">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Text>
+      <Text fx:id="boysLabel" layoutX="415.0" layoutY="682.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Парни:" textAlignment="RIGHT" wrappingWidth="128.67088615894318" />
+      <Text fx:id="girlsLabel" layoutX="415.0" layoutY="703.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Девушки:" textAlignment="RIGHT" wrappingWidth="128.67088615894318" />
+      <Text fx:id="boysField" layoutX="544.0" layoutY="683.0" strokeType="OUTSIDE" strokeWidth="0.0" text="000" textAlignment="CENTER" wrappingWidth="55.99999523162842">
+         <font>
+            <Font size="17.0" />
+         </font>
+      </Text>
+      <Text fx:id="girlsField" layoutX="544.0" layoutY="704.0" strokeType="OUTSIDE" strokeWidth="0.0" text="000" textAlignment="CENTER" wrappingWidth="55.99999523162842">
+         <font>
+            <Font size="17.0" />
+         </font>
+      </Text>
+      <Text fill="#ff0101" layoutX="125.0" layoutY="626.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Текст ошибки" textAlignment="CENTER" wrappingWidth="351.6708984375" />
+   </children>
+</Pane>
