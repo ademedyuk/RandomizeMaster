@@ -16,11 +16,11 @@ import ru.demedyuk.randomize.controllers.SettingsController;
 
 import java.net.URL;
 
-import static ru.demedyuk.randomize.constants.FileExtensions.FXML;
+import static ru.demedyuk.randomize.constants.Paths.SETTINGS_VIEW;
 
 public class AppLaunch extends Application {
 
-    public static final String VERSION = "2.1";
+    public static final String VERSION = "2.2";
     public static final String RELEASE_DATE = "05.01.2021";
 
     private Stage appStage;
@@ -32,7 +32,7 @@ public class AppLaunch extends Application {
     public void start(Stage primaryStage) throws Exception {
         appStage = primaryStage;
 
-        URL locationUrl = getClass().getClassLoader().getResource("views/SettingsView" + FXML);
+        URL locationUrl = getClass().getClassLoader().getResource(SETTINGS_VIEW);
         Parent root = FXMLLoader.load(locationUrl);
         appStage.setResizable(true);
         appStage.getIcons().add(new Image(getClass().getClassLoader().getResourceAsStream(PATH_TO_LOGO)));

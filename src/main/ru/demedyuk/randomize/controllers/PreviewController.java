@@ -3,17 +3,22 @@ package ru.demedyuk.randomize.controllers;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.PixelReader;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.ImagePattern;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import ru.demedyuk.randomize.configuration.RuntimeSettings;
@@ -31,18 +36,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static ru.demedyuk.randomize.constants.Paths.IMAGES;
+import static ru.demedyuk.randomize.constants.Paths.SETTINGS_VIEW;
+
 
 public class PreviewController implements IController {
+
+    private static final String BOY = "boy";
+    private static final String GIRL = "girl";
+    private static final String BOY_PNG = BOY + FileExtensions.PNG;
+    private static final String GIRL_PNG = GIRL + FileExtensions.PNG;
 
     private Stage appStage;
     private ScreenProperties screenResolutionProperties;
     private Color textColor;
-
     private HashMap<Integer, List<Player>> finalTeams;
     private Double textValueRate;
     private int teamsCount;
-    //private int startIndex; //индекс начала отображения игроков
-
     private boolean usePhoto;
     private String pathToPhoto;
     private String teamTitle;
@@ -161,8 +171,18 @@ public class PreviewController implements IController {
         int index = 0;
         for (Player player : finalTeams.get(currentPageIndex - 1)) {
             showNames(player, index);
-            if (this.usePhoto)
+            if (this.usePhoto) {
+
+
+                Image image = getPhoto(player);
+                Circle circle = new Circle(60);
+                circle.setCenterX(60);
+                circle.setCenterY(60);
+                circle.setFill(new ImagePattern(image, 0, 0, 120, 120, false));
+
+                photos[index].setStyle("border-radius: 10px;");
                 photos[index].setImage(getPhoto(player));
+            }
             imageView.setPreserveRatio(true);
 
             index++;
@@ -385,29 +405,31 @@ public class PreviewController implements IController {
         this.state = value;
     }
 
-    private static final String BOY_PNG = "boy" + FileExtensions.PNG;
-    private static final String GIRL_PNG = "girl" + FileExtensions.PNG;
-
     private Image getPhoto(Player player) {
 
-        String urlCustomPhoto = pathToPhoto + "//";
-        boolean existsCustomPhoto = java.nio.file.Paths.get(urlCustomPhoto + BOY_PNG).toFile().exists() || java.nio.file.Paths.get(urlCustomPhoto + GIRL_PNG).toFile().exists();
-
-        String photoUrl;
         String urlPhotoByName = photoExists(pathToPhoto + "//" + player.firstName + " " + player.lastName);
+        String urlPhotoByNum = photoExists(pathToPhoto + "//" + player.number);
+        String urlCustomPhoto = pathToPhoto + "//";
+
+        String photoUrl = null;
         if (!urlPhotoByName.equals(""))
             photoUrl = urlPhotoByName;
-        else
-            photoUrl = photoExists(pathToPhoto + "//" + player.number);
+        else if (!urlPhotoByNum.equals(""))
+            photoUrl = urlPhotoByNum;
 
-        if (!photoUrl.equals(""))
+
+        if (photoUrl != null)
             return new Image(Paths.FILE + photoUrl);
-        else if (existsCustomPhoto)
+
+        else if (!photoExists(urlCustomPhoto + BOY).equals("")
+                || !photoExists(urlCustomPhoto + GIRL).equals(""))
             return player.gender.equals(Gender.BOY) ?
-                    new Image(Paths.FILE + urlCustomPhoto + BOY_PNG) : new Image(Paths.FILE + urlCustomPhoto + GIRL_PNG);
+                    new Image(Paths.FILE + photoExists(urlCustomPhoto + BOY))
+                    : new Image(Paths.FILE + photoExists(urlCustomPhoto + GIRL));
         else
             return player.gender.equals(Gender.BOY) ?
-                    new Image(getClass().getClassLoader().getResourceAsStream("images/" + BOY_PNG)) : new Image(getClass().getClassLoader().getResourceAsStream("images/" + GIRL_PNG));
+                    new Image(getClass().getClassLoader().getResourceAsStream(IMAGES + BOY_PNG))
+                    : new Image(getClass().getClassLoader().getResourceAsStream(IMAGES + GIRL_PNG));
     }
 
     private String photoExists(String url) {
@@ -424,8 +446,6 @@ public class PreviewController implements IController {
 
     private KeyCombination restartHotKey;
     private KeyCombination fullScreenHotKey;
-    private KeyCombination nextButtonHotKey;
-    private KeyCombination previousButtonHotKey;
 
     private void addHotkeysEvents() {
         restartHotKey = new KeyCodeCombination(KeyCode.R, KeyCombination.CONTROL_DOWN);
@@ -452,7 +472,7 @@ public class PreviewController implements IController {
 
     @Override
     public String getNextViewName() {
-        return "views/SettingsView" + FileExtensions.FXML;
+        return SETTINGS_VIEW;
     }
 
     @Override

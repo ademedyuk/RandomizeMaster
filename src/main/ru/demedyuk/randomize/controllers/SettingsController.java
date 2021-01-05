@@ -29,10 +29,7 @@ import ru.demedyuk.randomize.models.files.InputFileReader;
 import ru.demedyuk.randomize.utils.FileUtils;
 import ru.demedyuk.randomize.utils.actions.RandomizeAction;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 import java.util.*;
 
@@ -40,6 +37,7 @@ import static ru.demedyuk.randomize.configuration.properties.ConfigProperties.*;
 import static ru.demedyuk.randomize.constants.FileExtensions.*;
 import static ru.demedyuk.randomize.constants.PaintColors.BLACK;
 import static ru.demedyuk.randomize.constants.PaintColors.GRAY;
+import static ru.demedyuk.randomize.constants.Paths.PREVIEW_VIEW;
 import static ru.demedyuk.randomize.utils.FileUtils.makeDirsIfNotExists;
 import static ru.demedyuk.randomize.utils.actions.OutputMessageActions.showErrorMessageWithDefaultDelay;
 
@@ -133,7 +131,6 @@ public class SettingsController implements IController {
             fileSaveAsActionHandler(event);
     }
 
-
     @FXML
     void fileSaveAsActionHandler(ActionEvent event) {
         updateProps(this.props);
@@ -145,7 +142,12 @@ public class SettingsController implements IController {
         fileChooser.setInitialFileName("new" + CONFIG);
         File selectedFile = fileChooser.showSaveDialog(null);
 
+        System.out.println("pathToConfig save as" + pathToConfig);
+        System.out.println("selected file save as" + selectedFile);
+        System.out.println("props" + this.props);
+
         pathToConfig = ActionProperties.saveProperties(this.props, selectedFile);
+        System.out.println("pathToConfig2 save as" + pathToConfig);
     }
 
     @FXML
@@ -285,14 +287,22 @@ public class SettingsController implements IController {
 
         scanFonts();
 
+        InputStream input = null;
         if (this.pathToConfig == null)
-            this.pathToConfig = getClass().getClassLoader().getResource(DEFAULT_PROPERTIES).getFile();
+            input = getClass().getClassLoader().getResourceAsStream(DEFAULT_PROPERTIES);
+        else {
+            try {
+                input = new FileInputStream(this.pathToConfig);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
 
-        try (InputStream input = new FileInputStream(this.pathToConfig)) {
-            this.props = new Properties();
-            props.load(input);
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        this.props = new Properties();
+        try {
+            this.props.load(input);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         initConfig(null, this.pathToConfig, currentProps != null ? currentProps : this.props);
@@ -678,7 +688,7 @@ public class SettingsController implements IController {
 
     @Override
     public String getNextViewName() {
-        return "views/PreviewView" + FXML;
+        return PREVIEW_VIEW;
     }
 }
 

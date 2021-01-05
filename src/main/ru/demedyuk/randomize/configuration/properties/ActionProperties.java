@@ -13,8 +13,8 @@ public class ActionProperties {
             String pathToConfig = selectedFile.getPath();
             try (OutputStream output = new FileOutputStream(selectedFile)) {
                 props.store(output, null);
-            } catch (IOException io) {
-                io.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
             return pathToConfig;
