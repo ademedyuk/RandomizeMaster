@@ -11,6 +11,7 @@
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
@@ -18,7 +19,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<VBox alignment="TOP_RIGHT" prefHeight="786.0" prefWidth="784.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.demedyuk.randomize.controllers.SettingsController">
+<VBox alignment="TOP_RIGHT" prefHeight="831.0" prefWidth="784.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.demedyuk.randomize.controllers.SettingsController">
   <children>
     <MenuBar fx:id="menuBar" cache="true" focusTraversable="false" pickOnBounds="false" VBox.vgrow="NEVER">
       <menus>
@@ -40,9 +41,9 @@
         </Menu>
       </menus>
     </MenuBar>
-      <Pane prefHeight="786.0" prefWidth="784.0">
+      <Pane prefHeight="791.0" prefWidth="784.0">
          <children>
-            <TextField fx:id="input_info" layoutX="201.0" layoutY="75.0" prefHeight="31.0" prefWidth="347.0" />
+            <TextField fx:id="input_info" editable="false" layoutX="201.0" layoutY="75.0" prefHeight="31.0" prefWidth="347.0" />
             <Button fx:id="selectListOfPlayersButton" layoutX="559.0" layoutY="75.0" mnemonicParsing="false" onAction="#selectListOfPlayersButtonAction" prefHeight="31.0" prefWidth="92.0" text="Обзор..." />
             <Text layoutX="53.0" layoutY="95.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Список участников:">
                <font>
@@ -56,29 +57,29 @@
             </Text>
             <TextField fx:id="ouput_info" layoutX="201.0" layoutY="117.0" prefHeight="31.0" prefWidth="347.0" />
             <Button fx:id="selectResultDirectoryButton" layoutX="559.0" layoutY="117.0" mnemonicParsing="false" onAction="#selectResultDirectoryButtonAction" prefHeight="31.0" prefWidth="92.0" text="Обзор..." />
-            <Text layoutX="71.0" layoutY="414.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Фон:" textAlignment="RIGHT" wrappingWidth="114.06006383895874">
+            <Text layoutX="76.0" layoutY="414.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Фон:" textAlignment="RIGHT" wrappingWidth="114.06006383895874">
                <font>
                   <Font name="Playbill" size="15.0" />
                </font>
             </Text>
-            <TextField fx:id="background" layoutX="201.0" layoutY="394.0" prefHeight="31.0" prefWidth="350.0" />
+            <TextField fx:id="background" editable="false" layoutX="201.0" layoutY="394.0" prefHeight="31.0" prefWidth="350.0" />
             <Button fx:id="selectBackgroundImageButton" layoutX="562.0" layoutY="394.0" mnemonicParsing="false" onAction="#selectBackgroundImageButtonAction" prefHeight="31.0" prefWidth="92.0" text="Обзор..." />
-            <RadioButton fx:id="fullScrene" layoutX="200.0" layoutY="531.0" mnemonicParsing="false" onAction="#handleFullScrene" selected="true" text="Полный экран" />
-            <RadioButton fx:id="inWindow" layoutX="200.0" layoutY="559.0" mnemonicParsing="false" onAction="#handleInWindow" text="В окне" />
-            <RadioButton fx:id="_1920x1080_button" layoutX="200.0" layoutY="602.0" mnemonicParsing="false" onAction="#screenResolutionAction" selected="true" text="1920 x 1080" />
-            <RadioButton fx:id="_1366x768_button" layoutX="340.0" layoutY="602.0" mnemonicParsing="false" onAction="#screenResolutionAction" text="1366 x 768 " />
-            <Text layoutX="51.0" layoutY="615.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Разрешение экрана:">
+            <RadioButton fx:id="fullScrene" layoutX="204.0" layoutY="581.0" mnemonicParsing="false" onAction="#handleFullScrene" selected="true" text="Полный экран" />
+            <RadioButton fx:id="inWindow" layoutX="204.0" layoutY="609.0" mnemonicParsing="false" onAction="#handleInWindow" text="В окне" />
+            <RadioButton fx:id="_1920x1080_button" layoutX="204.0" layoutY="652.0" mnemonicParsing="false" onAction="#screenResolutionAction" selected="true" text="1920 x 1080" />
+            <RadioButton fx:id="_1366x768_button" layoutX="344.0" layoutY="652.0" mnemonicParsing="false" onAction="#screenResolutionAction" text="1366 x 768 " />
+            <Text layoutX="55.0" layoutY="667.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Разрешение экрана:" wrappingWidth="147.0">
                <font>
                   <Font name="Playbill" size="15.0" />
                </font>
             </Text>
-            <RadioButton fx:id="_1024x768_button" layoutX="200.0" layoutY="631.0" mnemonicParsing="false" onAction="#screenResolutionAction" text="1024 x 768" />
-            <Text layoutX="77.0" layoutY="546.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Вид:" textAlignment="RIGHT" wrappingWidth="114.06006383895874">
+            <RadioButton fx:id="_1024x768_button" layoutX="204.0" layoutY="681.0" mnemonicParsing="false" onAction="#screenResolutionAction" text="1024 x 768" />
+            <Text layoutX="77.0" layoutY="597.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Вид:" textAlignment="RIGHT" wrappingWidth="114.06006383895874">
                <font>
                   <Font name="Playbill" size="15.0" />
                </font>
             </Text>
-            <RadioButton fx:id="_800x600_button" layoutX="340.0" layoutY="631.0" mnemonicParsing="false" onAction="#screenResolutionAction" text="800 x 600" />
+            <RadioButton fx:id="_800x600_button" layoutX="344.0" layoutY="681.0" mnemonicParsing="false" onAction="#screenResolutionAction" text="800 x 600" />
             <CheckBox fx:id="isBalansing" layoutX="200.0" layoutY="211.0" mnemonicParsing="false" prefHeight="21.0" prefWidth="222.0" text="Баланс мальчики/девочки" />
             <TextField fx:id="path_to_photo" disable="true" layoutX="201.0" layoutY="277.0" prefHeight="31.0" prefWidth="347.0" />
             <Text fx:id="label_photo" layoutX="81.0" layoutY="298.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Каталог с фото:">
@@ -100,26 +101,28 @@
                </font>
             </Text>
             <Line endX="343.0" layoutX="304.0" layoutY="373.0" opacity="0.51" startX="-253.0" />
-            <ProgressBar fx:id="progress" layoutX="199.0" layoutY="673.0" opacity="0.5" prefHeight="23.0" prefWidth="311.0" progress="0.0" />
-            <Text fx:id="messageField" layoutX="202.0" layoutY="712.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Выберите список участников..." wrappingWidth="311.0000035762787">
+            <ProgressBar fx:id="progress" layoutX="203.0" layoutY="723.0" opacity="0.5" prefHeight="23.0" prefWidth="311.0" progress="0.0" />
+            <Text fx:id="messageField" layoutX="206.0" layoutY="762.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Выберите список участников..." wrappingWidth="311.0000035762787">
                <font>
                   <Font name="Playbill" size="15.0" />
                </font>
             </Text>
-            <Button fx:id="launch" layoutX="529.0" layoutY="669.0" mnemonicParsing="false" onAction="#handleLaunchButtonAction" prefHeight="31.0" prefWidth="125.0" text="GO" />
+            <Button fx:id="launch" layoutX="533.0" layoutY="719.0" mnemonicParsing="false" onAction="#handleLaunchButtonAction" prefHeight="31.0" prefWidth="125.0" text="GO" />
             <ColorPicker fx:id="textColor" layoutX="202.0" layoutY="439.0" prefHeight="31.0" prefWidth="126.0" />
             <Text layoutX="76.0" layoutY="459.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Текст:" textAlignment="RIGHT" wrappingWidth="114.06006383895874">
                <font>
                   <Font name="Playbill" size="15.0" />
                </font>
             </Text>
-            <Text layoutX="77.0" layoutY="505.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Алиас:" textAlignment="RIGHT" wrappingWidth="114.06006383895874">
+            <Text layoutX="77.0" layoutY="552.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Алиас:" textAlignment="RIGHT" wrappingWidth="114.06006383895874">
                <font>
                   <Font name="Playbill" size="15.0" />
                </font>
             </Text>
-            <TextField fx:id="teamTitle" layoutX="202.0" layoutY="484.0" prefHeight="31.0" prefWidth="350.0" />
-            <ChoiceBox fx:id="textFont" layoutX="347.0" layoutY="439.0" prefHeight="31.0" prefWidth="206.0" />
+            <TextField fx:id="teamTitle" layoutX="199.0" layoutY="532.0" prefHeight="31.0" prefWidth="356.0" />
+            <ChoiceBox fx:id="textFont" layoutX="344.0" layoutY="439.0" prefHeight="31.0" prefWidth="206.0" />
+            <Slider fx:id="textRate" blockIncrement="200.0" layoutX="203.0" layoutY="494.0" majorTickUnit="200.0" max="150.0" min="50.0" minorTickCount="1" prefHeight="17.0" prefWidth="125.0" value="100.0" />
+            <TextField fx:id="textRateField" editable="false" layoutX="345.0" layoutY="487.0" prefHeight="31.0" prefWidth="72.0" />
          </children>
       </Pane>
   </children>

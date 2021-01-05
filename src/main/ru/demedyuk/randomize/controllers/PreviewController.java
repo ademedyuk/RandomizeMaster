@@ -14,10 +14,8 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
-import org.apache.commons.io.FilenameUtils;
 import ru.demedyuk.randomize.configuration.RuntimeSettings;
 import ru.demedyuk.randomize.configuration.screen.Screen;
 import ru.demedyuk.randomize.configuration.screen.ScreenProperties;
@@ -27,11 +25,11 @@ import ru.demedyuk.randomize.models.Gender;
 import ru.demedyuk.randomize.models.Player;
 import ru.demedyuk.randomize.models.files.InputFileStates;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class PreviewController implements IController {
@@ -41,9 +39,9 @@ public class PreviewController implements IController {
     private Color textColor;
 
     private HashMap<Integer, List<Player>> finalTeams;
-    private int teamSizePreference;
+    private Double textValueRate;
     private int teamsCount;
-    private int startIndex; //индекс начала отображения игроков
+    //private int startIndex; //индекс начала отображения игроков
 
     private boolean usePhoto;
     private String pathToPhoto;
@@ -164,31 +162,31 @@ public class PreviewController implements IController {
         for (Player player : finalTeams.get(currentPageIndex - 1)) {
             showNames(player, index);
             if (this.usePhoto)
-                photos[index + this.startIndex].setImage(getPhoto(player));
+                photos[index].setImage(getPhoto(player));
             imageView.setPreserveRatio(true);
 
             index++;
         }
 
         teamLabel.setText(this.teamTitle + " " + currentPageIndex);
-        setVisibleTablaOfPlayers(finalTeams.get(currentPageIndex - 1).size(), this.startIndex, true);
+        setVisibleTablaOfPlayers(finalTeams.get(currentPageIndex - 1).size(), true);
     }
 
     private void showNames(Player player, int index) {
         if (this.state.equals(InputFileStates.FIRTSNAME)) {
-            names[index + this.startIndex].setText(player.firstName);
+            names[index].setText(player.firstName);
             return;
         }
 
         if (this.state.equals(InputFileStates.FIRTSNAME_LASTNAME)
                 || this.state.equals(InputFileStates.FIRTSNAME_LASTNAME_GENDER)) {
-            names[index + this.startIndex].setText(player.firstName + " " +  player.lastName);
+            names[index].setText(player.firstName + " " + player.lastName);
             return;
         }
 
         if (this.state.equals(InputFileStates.NUMBER_FIRTSNAME_LASTNAME)
                 || this.state.equals(InputFileStates.NUMBER_FIRTSNAME_LASTNAME_GENDER)) {
-            names[index + this.startIndex].setText(player.number + " " + player.firstName + " " + player.lastName);
+            names[index].setText(player.number + " " + player.firstName + " " + player.lastName);
             return;
         }
     }
@@ -200,11 +198,11 @@ public class PreviewController implements IController {
         }
     }
 
-    public void setVisibleTablaOfPlayers(int size, int startIndexValue, boolean value) {
+    public void setVisibleTablaOfPlayers(int size, boolean value) {
         teamLabel.setVisible(value);
         for (int i = 0; i < size; i++) {
-            names[i + startIndexValue].setVisible(value);
-            photos[i + startIndexValue].setVisible(value);
+            names[i].setVisible(value);
+            photos[i].setVisible(value);
         }
     }
 
@@ -214,7 +212,7 @@ public class PreviewController implements IController {
     }
 
     public void setUnvisibleTableOfPlayers() {
-        setVisibleTablaOfPlayers(names.length, 0, false);
+        setVisibleTablaOfPlayers(names.length, false);
     }
 
     public void setUnvisibleNavigateButtons() {
@@ -289,29 +287,69 @@ public class PreviewController implements IController {
         teamLabel.setLayoutX(screenResolutionProperties.width / 2 - teamLabel.getPrefWidth() / 2);
         teamLabel.setLayoutY(screenResolutionProperties.height * 0.03);
         teamLabel.setTextFill(this.textColor);
-        teamLabel.setFont(Font.font(this.font.getFamily(), this.font.getSize()*1.2));
+        teamLabel.setFont(Font.font(this.font.getFamily(), this.font.getSize() * 1.2));
         teamLabel.setText(this.teamTitle);
 
         //players
-        for (int i = 0; i < 9; i++) {
-            names[i].setLayoutX(screenResolutionProperties.nameLabel.getLayoutX());
+        int teamMaxSize = initMaxCount();
 
+        Map<Integer, Double> fontSizeMap = new HashMap<>();
+        fontSizeMap.put(2, 0.3);
+        fontSizeMap.put(3, 0.48);
+        fontSizeMap.put(4, 0.6);
+        fontSizeMap.put(5, 0.6);
+        fontSizeMap.put(6, 0.65);
+        fontSizeMap.put(7, 0.6);
+        fontSizeMap.put(8, 0.6);
+        fontSizeMap.put(9, 0.58);
+
+        for (int i = 0; i < teamMaxSize; i++) {
+
+            names[i].setPrefWidth(screenResolutionProperties.width * 0.7);
+            names[i].setPrefHeight(screenResolutionProperties.height * 0.75 / teamMaxSize);
+            names[i].setTextFill(this.textColor);
+            names[i].setFont(Font.font(this.font.getFamily(),
+                    names[i].getPrefHeight() * fontSizeMap.get(teamMaxSize) * textValueRate));
+
+            names[i].setLayoutX(screenResolutionProperties.width * 0.2);
             if (i == 0) {
-                names[i].setLayoutY(screenResolutionProperties.nameLabel.getLayoutY());
+                names[i].setLayoutY(screenResolutionProperties.height * 0.1);
             } else {
-                names[i].setLayoutY(names[i - 1].getLayoutY() + names[i - 1].getPrefHeight() + screenResolutionProperties.nameCoefficientY);
+                names[i].setLayoutY(names[i - 1].getLayoutY() + photos[i - 1].getFitHeight() + screenResolutionProperties.nameCoefficientY);
             }
 
-            names[i].setPrefWidth(screenResolutionProperties.width * 0.5);
-            names[i].setFont(this.font);
-            names[i].setTextFill(this.textColor);
-
             photos[i].setPreserveRatio(true);
-            photos[i].setFitHeight(this.font.getSize() * PHOTO_RESIZABLE_RATE);
-            photos[i].setFitWidth(this.font.getSize() * PHOTO_RESIZABLE_RATE);
-            photos[i].setLayoutX(names[i].getLayoutX() - photos[i].getFitWidth() * 1.3);
-            photos[i].setLayoutY(names[i].getLayoutY() + names[i].getPrefHeight()/2 - photos[i].getFitHeight()/2);
+            photos[i].setFitHeight(names[i].getFont().getSize() * PHOTO_RESIZABLE_RATE);
+            photos[i].setFitWidth(names[i].getFont().getSize() * PHOTO_RESIZABLE_RATE);
+            photos[i].setLayoutX(names[i].getLayoutX() - photos[i].getFitWidth() * 1.2);
+            photos[i].setLayoutY(names[i].getLayoutY() + (names[i].getPrefHeight() - photos[i].getFitHeight()) * 0.5);
         }
+
+        //выравнивание по вертикали
+        Double minY = photos[0].getLayoutY() - screenResolutionProperties.height * 0.05;
+        Double maxY = screenResolutionProperties.height - (names[teamMaxSize - 1].getLayoutY() + names[teamMaxSize - 1].getPrefHeight());
+
+        if (maxY < screenResolutionProperties.height * 0.8) {
+            double resY = (maxY + minY) / 2;
+            double newY = (resY - minY);
+
+            for (int i = 0; i < teamMaxSize; i++) {
+                names[i].setLayoutY(names[i].getLayoutY() + newY);
+                photos[i].setLayoutY(photos[i].getLayoutY() + newY);
+            }
+        }
+    }
+
+    private int initMaxCount() {
+        int max = 0;
+
+        for (Map.Entry<Integer, List<Player>> team : finalTeams.entrySet()) {
+            int count = team.getValue().size();
+            if (count > max)
+                max = count;
+        }
+
+        return max;
     }
 
     public void setFullScreenIfNeeded(boolean isNeed) {
@@ -339,49 +377,29 @@ public class PreviewController implements IController {
         this.font = font;
     }
 
-    public void setTeamSizePreference(int teamSize) {
-        this.teamSizePreference = teamSize;
-        initStartIndex();
+    public void setTextValueRate(Double value) {
+        this.textValueRate = value / 100;
     }
 
     public void setState(InputFileStates value) {
         this.state = value;
     }
 
-    private void initStartIndex() {
-        switch (this.teamSizePreference) {
-            case (2):
-                this.startIndex = 3;
-                break;
-            case (3):
-            case (4):
-                this.startIndex = 2;
-                break;
-            case (5):
-            case (6):
-                this.startIndex = 1;
-                break;
-            default:
-                this.startIndex = 0;
-                break;
-        }
-    }
-
     private static final String BOY_PNG = "boy" + FileExtensions.PNG;
     private static final String GIRL_PNG = "girl" + FileExtensions.PNG;
 
     private Image getPhoto(Player player) {
-        String urlPhotoByNum = pathToPhoto + "//" + player.number + FileExtensions.PNG;
-        String urlPhotoByName = pathToPhoto + "//" + player.firstName + " " + player.lastName + FileExtensions.PNG;
+
         String urlCustomPhoto = pathToPhoto + "//";
-
-        String photoUrl = "";
-        if (java.nio.file.Paths.get(urlPhotoByName).toFile().exists())
-            photoUrl = urlPhotoByName;
-        else if (java.nio.file.Paths.get(urlPhotoByNum).toFile().exists())
-            photoUrl = urlPhotoByNum;
-
         boolean existsCustomPhoto = java.nio.file.Paths.get(urlCustomPhoto + BOY_PNG).toFile().exists() || java.nio.file.Paths.get(urlCustomPhoto + GIRL_PNG).toFile().exists();
+
+        String photoUrl;
+        String urlPhotoByName = photoExists(pathToPhoto + "//" + player.firstName + " " + player.lastName);
+        if (!urlPhotoByName.equals(""))
+            photoUrl = urlPhotoByName;
+        else
+            photoUrl = photoExists(pathToPhoto + "//" + player.number);
+
         if (!photoUrl.equals(""))
             return new Image(Paths.FILE + photoUrl);
         else if (existsCustomPhoto)
@@ -391,6 +409,18 @@ public class PreviewController implements IController {
             return player.gender.equals(Gender.BOY) ?
                     new Image(getClass().getClassLoader().getResourceAsStream("images/" + BOY_PNG)) : new Image(getClass().getClassLoader().getResourceAsStream("images/" + GIRL_PNG));
     }
+
+    private String photoExists(String url) {
+        if (java.nio.file.Paths.get(url + FileExtensions.PNG).toFile().exists())
+            return url + FileExtensions.PNG;
+        if (java.nio.file.Paths.get(url + FileExtensions.JPEG).toFile().exists())
+            return url + FileExtensions.JPEG;
+        if (java.nio.file.Paths.get(url + FileExtensions.JPG).toFile().exists())
+            return url + FileExtensions.JPG;
+
+        return "";
+    }
+
 
     private KeyCombination restartHotKey;
     private KeyCombination fullScreenHotKey;
