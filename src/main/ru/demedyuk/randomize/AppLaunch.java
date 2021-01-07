@@ -12,11 +12,10 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import ru.demedyuk.randomize.constants.Paths;
 import ru.demedyuk.randomize.controllers.SettingsController;
 
 import java.net.URL;
-
-import static ru.demedyuk.randomize.constants.Paths.SETTINGS_VIEW;
 
 public class AppLaunch extends Application {
 
@@ -32,7 +31,7 @@ public class AppLaunch extends Application {
     public void start(Stage primaryStage) throws Exception {
         appStage = primaryStage;
 
-        URL locationUrl = getClass().getClassLoader().getResource(SETTINGS_VIEW);
+        URL locationUrl = getClass().getClassLoader().getResource(Paths.SETTINGS_VIEW);
         Parent root = FXMLLoader.load(locationUrl);
         appStage.setResizable(true);
         appStage.getIcons().add(new Image(getClass().getClassLoader().getResourceAsStream(PATH_TO_LOGO)));

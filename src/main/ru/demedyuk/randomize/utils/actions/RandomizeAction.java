@@ -12,8 +12,6 @@ import java.util.Random;
 
 public class RandomizeAction {
 
-    private String resultFilePath;
-    private String teamLabel;
     private int teamSize;
 
     //списки нераспределенных игроков
@@ -27,11 +25,12 @@ public class RandomizeAction {
     //готовые команды
     private HashMap<Integer, List<Player>> finalTeams = new HashMap<>();
 
-    public RandomizeAction(List<Player> allPlayers, String resultFilePath, int countOfPlayers, boolean needBalance, String teamLabel) {
+    public RandomizeAction(List<Player> allPlayers, int teamSize, boolean needBalance) {
+        if (teamSize >= allPlayers.size())
+            throw new IllegalArgumentException("Общее количество игроков, должно превышать выбранный размер команды");
+
         this.allPlayers = allPlayers;
-        this.resultFilePath = resultFilePath;
-        this.teamSize = countOfPlayers;
-        this.teamLabel = teamLabel;
+        this.teamSize = teamSize;
 
         if (needBalance) {
             initPlayersBySex();
@@ -41,9 +40,6 @@ public class RandomizeAction {
             calculateTeams();
             doRandom();
         }
-
-        Thread saveResultsThread = new Thread(this::saveResults);
-        saveResultsThread.start();
     }
 
     private void initPlayersBySex() {
@@ -84,6 +80,14 @@ public class RandomizeAction {
                 }
             }
         }
+
+        int allCalcutale = 0;
+        for (int i : teamNumbers.keySet())
+            allCalcutale += teamNumbers.get(i);
+        if (allPlayers.size() < allCalcutale)
+            throw new IllegalArgumentException(String.format(
+                    "Невозможно разделить %s игроков на команды по %s человек(а)",
+                    allPlayers.size(), this.teamSize));
     }
 
     private void doRandom() {
@@ -129,14 +133,14 @@ public class RandomizeAction {
         return finalTeams;
     }
 
-    private void saveResults() {
+    public void saveResults(String resultsFilePath, String teamLabel) {
         if (finalTeams.size() == 0)
             return;
 
-        DocxGenerate docxGenerate = new DocxGenerate(this.resultFilePath.replace(FileExtensions.DOCX, ""));
+        DocxGenerate docxGenerate = new DocxGenerate(resultsFilePath.replace(FileExtensions.DOCX, ""));
 
         for (int i = 1; i <= finalTeams.size(); i++) {
-            docxGenerate.addOneTeamInfo(this.teamLabel + " " + i, finalTeams.get(i-1));
+            docxGenerate.addOneTeamInfo(teamLabel + " " + i, finalTeams.get(i - 1));
         }
 
         docxGenerate.generate();

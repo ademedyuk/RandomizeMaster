@@ -104,7 +104,7 @@
             <ProgressBar fx:id="progress" layoutX="203.0" layoutY="723.0" opacity="0.5" prefHeight="23.0" prefWidth="311.0" progress="0.0" />
             <Text fx:id="messageField" layoutX="206.0" layoutY="762.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Выберите список участников..." wrappingWidth="311.0000035762787">
                <font>
-                  <Font name="Playbill" size="15.0" />
+                  <Font name="System" size="15.0" />
                </font>
             </Text>
             <Button fx:id="launch" layoutX="533.0" layoutY="719.0" mnemonicParsing="false" onAction="#handleLaunchButtonAction" prefHeight="31.0" prefWidth="125.0" text="GO" />

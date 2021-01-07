@@ -25,6 +25,9 @@ import ru.demedyuk.randomize.configuration.screen.Screen;
 import ru.demedyuk.randomize.constants.FileExtensions;
 import ru.demedyuk.randomize.constants.Paths;
 import ru.demedyuk.randomize.messages.About;
+import ru.demedyuk.randomize.messages.OutputMessages;
+import ru.demedyuk.randomize.messages.Tooltips;
+import ru.demedyuk.randomize.messages.WindowTitles;
 import ru.demedyuk.randomize.models.files.InputFileReader;
 import ru.demedyuk.randomize.utils.FileUtils;
 import ru.demedyuk.randomize.utils.actions.RandomizeAction;
@@ -33,11 +36,12 @@ import java.io.*;
 import java.net.URL;
 import java.util.*;
 
-import static ru.demedyuk.randomize.configuration.properties.ConfigProperties.*;
 import static ru.demedyuk.randomize.constants.FileExtensions.*;
 import static ru.demedyuk.randomize.constants.PaintColors.BLACK;
 import static ru.demedyuk.randomize.constants.PaintColors.GRAY;
+import static ru.demedyuk.randomize.constants.Paths.DEFAULT_PROPERTIES;
 import static ru.demedyuk.randomize.constants.Paths.PREVIEW_VIEW;
+import static ru.demedyuk.randomize.messages.WindowTitles.main_title;
 import static ru.demedyuk.randomize.utils.FileUtils.makeDirsIfNotExists;
 import static ru.demedyuk.randomize.utils.actions.OutputMessageActions.showErrorMessageWithDefaultDelay;
 
@@ -48,7 +52,63 @@ public class SettingsController implements IController {
     private static Properties currentProps;
     private static String pathToConfig;
 
-    private static final String DEFAULT_PROPERTIES = "properties/default.properties";
+    @FXML
+    void quitMenuItemActionHandler(ActionEvent event) {
+        AppLaunch.stopApplication();
+    }
+
+    @FXML
+    private TextField input_info;
+    @FXML
+    private Button selectListOfPlayersButton;
+    @FXML
+    public TextField ouput_info;
+    @FXML
+    private Button selectResultDirectoryButton;
+    @FXML
+    private ChoiceBox<String> countOfPlayers = new ChoiceBox<String>();
+    @FXML
+    private ChoiceBox<String> textFont = new ChoiceBox<String>();
+    @FXML
+    private CheckBox isBalansing;
+    @FXML
+    private CheckBox usePrivatePhoto;
+    @FXML
+    private Text label_photo;
+    @FXML
+    private TextField path_to_photo;
+    @FXML
+    private Button selectPhotoButton;
+    @FXML
+    private TextField background;
+    @FXML
+    private Button selectBackgroundImageButton;
+    @FXML
+    private RadioButton fullScrene;
+    @FXML
+    private RadioButton inWindow;
+    @FXML
+    private RadioButton _1920x1080_button;
+    @FXML
+    private RadioButton _1366x768_button;
+    @FXML
+    private RadioButton _1024x768_button;
+    @FXML
+    private RadioButton _800x600_button;
+    @FXML
+    private ProgressBar progress;
+    @FXML
+    private Text messageField;
+    @FXML
+    private Button launch;
+    @FXML
+    private TextField teamTitle;
+    @FXML
+    private ColorPicker textColor;
+    @FXML
+    private Slider textRate;
+    @FXML
+    private TextField textRateField;
 
     @FXML
     void fileActionHandler(ActionEvent event) {
@@ -75,28 +135,8 @@ public class SettingsController implements IController {
         checkProgress();
         usePrivatePhotoAction(new ActionEvent());
 
-        appStage.setTitle("Randomize Master");
+        appStage.setTitle(main_title);
         updateProps(this.props);
-    }
-
-    private void scanFonts() {
-        File folder = new File(".\\fonts");
-        File[] listOfFiles = folder.listFiles();
-
-        List<String> fonts = new ArrayList<String>();
-
-        if (listOfFiles != null)
-            for (File file : listOfFiles) {
-                if (file.isFile() && file.getName().contains(".ttf")) {
-                    String fileName = file.getName();
-                    String fontName = fileName.substring(0, fileName.lastIndexOf("."));
-                    fonts.add(fontName);
-                }
-            }
-
-        textFont.getItems().add("Default");
-        textFont.getItems().addAll(fonts);
-        textFont.setValue("Default");
     }
 
     @FXML
@@ -105,7 +145,7 @@ public class SettingsController implements IController {
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialDirectory(configDirectory);
-        fileChooser.setTitle("Открыть конфигурацию");
+        fileChooser.setTitle(WindowTitles.open_configuration_title);
         fileChooser.getExtensionFilters()
                 .addAll(new FileChooser.ExtensionFilter("Файлы конфигураций", "*.config"));
         File selectedFile = fileChooser.showOpenDialog(null);
@@ -138,16 +178,11 @@ public class SettingsController implements IController {
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialDirectory(configDirectory);
-        fileChooser.setTitle("Сохранить конфигурацию");
+        fileChooser.setTitle(WindowTitles.save_configuration_title);
         fileChooser.setInitialFileName("new" + CONFIG);
         File selectedFile = fileChooser.showSaveDialog(null);
 
-        System.out.println("pathToConfig save as" + pathToConfig);
-        System.out.println("selected file save as" + selectedFile);
-        System.out.println("props" + this.props);
-
         pathToConfig = ActionProperties.saveProperties(this.props, selectedFile);
-        System.out.println("pathToConfig2 save as" + pathToConfig);
     }
 
     @FXML
@@ -155,7 +190,7 @@ public class SettingsController implements IController {
         final Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.initOwner(this.appStage);
-        dialog.setTitle("About");
+        dialog.setTitle(WindowTitles.about_window_title);
         dialog.getIcons().add(new Image(getClass().getClassLoader().getResourceAsStream(AppLaunch.PATH_TO_LOGO)));
         VBox dialogVbox = new VBox(20);
         dialogVbox.getChildren().add(new Text(About.ABOUT_TEXT));
@@ -163,109 +198,6 @@ public class SettingsController implements IController {
         dialog.setScene(dialogScene);
         dialog.show();
     }
-
-    @FXML
-    void quitMenuItemActionHandler(ActionEvent event) {
-        AppLaunch.stopApplication();
-    }
-
-    private void updateProps(Properties props) {
-        setPropertyIfExists(props, PLAYERS_FILE, input_info.getText());
-        setPropertyIfExists(props, RESULT_FILE, ouput_info.getText());
-        setPropertyIfExists(props, TEAM_SIZE, countOfPlayers.getValue());
-        setPropertyIfExists(props, USE_BALANSE, isBalansing.isSelected() ? "true" : "false");
-        setPropertyIfExists(props, USE_PHOTO, usePrivatePhoto.isSelected() ? "true" : "false");
-        setPropertyIfExists(props, PHOTO_DIRECTORY_FILE, path_to_photo.getText());
-
-        setPropertyIfExists(props, BACKGROUD_FILE, background.getText());
-        setPropertyIfExists(props, TEXT_COLOR, textColor.getValue().toString());
-        setPropertyIfExists(props, TEXT_FONT, textFont.getValue());
-        setPropertyIfExists(props, TEXT_RATE, String.valueOf(textRate.getValue()));
-        setPropertyIfExists(props, TEAM_NAME, teamTitle.getText());
-        setPropertyIfExists(props, SCREEN_SIZE, getScreen().name);
-        setPropertyIfExists(props, SCREEN_IS_FULL, fullScrene.isSelected() ? "true" : "false");
-    }
-
-    private void setPropertyIfExists(Properties props, ConfigProperties property, String value) {
-        try {
-            props.setProperty(property.key, value);
-        } catch (Exception e) {
-            System.out.println("Ошибка при сохранеии " + property.key);
-        }
-    }
-
-    private String getPropertyIfExists(Properties props, ConfigProperties property) {
-        try {
-            String value = props.getProperty(property.key);
-            return value != null ? value : "";
-        } catch (Exception e) {
-            System.out.println("Ошибка при получении " + property.key);
-        }
-
-        return "";
-    }
-
-    @FXML
-    private TextField input_info;
-    @FXML
-    private Button selectListOfPlayersButton;
-
-    @FXML
-    public TextField ouput_info;
-    @FXML
-    private Button selectResultDirectoryButton;
-
-    @FXML
-    private ChoiceBox<String> countOfPlayers = new ChoiceBox<String>();
-
-    @FXML
-    private ChoiceBox<String> textFont = new ChoiceBox<String>();
-
-    @FXML
-    private CheckBox isBalansing;
-
-    @FXML
-    private CheckBox usePrivatePhoto;
-    @FXML
-    private Text label_photo;
-    @FXML
-    private TextField path_to_photo;
-    @FXML
-    private Button selectPhotoButton;
-
-    @FXML
-    private TextField background;
-    @FXML
-    private Button selectBackgroundImageButton;
-
-    @FXML
-    private RadioButton fullScrene;
-    @FXML
-    private RadioButton inWindow;
-
-    @FXML
-    private RadioButton _1920x1080_button;
-    @FXML
-    private RadioButton _1366x768_button;
-    @FXML
-    private RadioButton _1024x768_button;
-    @FXML
-    private RadioButton _800x600_button;
-
-    @FXML
-    private ProgressBar progress;
-    @FXML
-    private Text messageField;
-    @FXML
-    private Button launch;
-    @FXML
-    private TextField teamTitle;
-    @FXML
-    private ColorPicker textColor;
-    @FXML
-    private Slider textRate;
-    @FXML
-    private TextField textRateField;
 
     public void initScene() {
         countOfPlayers.getItems().addAll("2 участника",
@@ -279,11 +211,10 @@ public class SettingsController implements IController {
         isBalansing.setSelected(false);
         usePrivatePhoto.setSelected(false);
         label_photo.setFill(GRAY);
-        messageField.setText("Выберите файл с участниками");
         teamTitle.setText("Команда");
 
-        textRate.setTooltip(new Tooltip("Измение размера шрифта"));
-        textRateField.setTooltip(new Tooltip("Величина изменения размера шрифта"));
+        textRate.setTooltip(new Tooltip(Tooltips.slider_text_rate_tooltip));
+        textRateField.setTooltip(new Tooltip(Tooltips.text_rate_value_tooltip));
 
         scanFonts();
 
@@ -310,24 +241,24 @@ public class SettingsController implements IController {
 
     public void initConfig(ActionEvent event, String path, Properties props) {
         //загрузка конгфигурации по умолчанию
-        input_info.setText(getPropertyIfExists(props, PLAYERS_FILE));
-        ouput_info.setText(getPropertyIfExists(props, RESULT_FILE));
-        countOfPlayers.setValue(getPropertyIfExists(props, TEAM_SIZE));
-        isBalansing.setSelected(getPropertyIfExists(props, USE_BALANSE).equals("true") ? true : false);
+        input_info.setText(getPropertyIfExists(props, ConfigProperties.PLAYERS_FILE));
+        ouput_info.setText(getPropertyIfExists(props, ConfigProperties.RESULT_FILE));
+        countOfPlayers.setValue(getPropertyIfExists(props, ConfigProperties.TEAM_SIZE));
+        isBalansing.setSelected(getPropertyIfExists(props, ConfigProperties.USE_BALANSE).equals("true") ? true : false);
 
-        boolean usePhoto = getPropertyIfExists(props, USE_PHOTO).equals("true") ? true : false;
+        boolean usePhoto = getPropertyIfExists(props, ConfigProperties.USE_PHOTO).equals("true") ? true : false;
         usePrivatePhoto.setSelected(usePhoto);
-        path_to_photo.setText(getPropertyIfExists(props, PHOTO_DIRECTORY_FILE));
+        path_to_photo.setText(getPropertyIfExists(props, ConfigProperties.PHOTO_DIRECTORY_FILE));
         usePrivatePhotoAction(new ActionEvent());
 
-        background.setText(getPropertyIfExists(props, BACKGROUD_FILE));
-        textColor.setValue(Color.valueOf(getPropertyIfExists(props, TEXT_COLOR).equals("") ?
-                Color.WHITE.toString() : getPropertyIfExists(props, TEXT_COLOR)));
-        String textRateProperty = getPropertyIfExists(props, TEXT_RATE);
+        background.setText(getPropertyIfExists(props, ConfigProperties.BACKGROUD_FILE));
+        textColor.setValue(Color.valueOf(getPropertyIfExists(props, ConfigProperties.TEXT_COLOR).equals("") ?
+                Color.WHITE.toString() : getPropertyIfExists(props, ConfigProperties.TEXT_COLOR)));
+        String textRateProperty = getPropertyIfExists(props, ConfigProperties.TEXT_RATE);
         if (!textRateProperty.equals(""))
             textRate.setValue(Double.parseDouble(textRateProperty));
 
-        String textFontValue = getPropertyIfExists(props, TEXT_FONT);
+        String textFontValue = getPropertyIfExists(props, ConfigProperties.TEXT_FONT);
         inWindow.setSelected(false);
         fullScrene.setSelected(true);
         if (!textFontValue.equals("")) {
@@ -336,10 +267,10 @@ public class SettingsController implements IController {
                     textFont.setValue(textFontValue);
             }
         }
-        teamTitle.setText(getPropertyIfExists(props, TEAM_NAME));
+        teamTitle.setText(getPropertyIfExists(props, ConfigProperties.TEAM_NAME));
 
-        setScreen(getPropertyIfExists(props, SCREEN_SIZE));
-        if (getPropertyIfExists(props, SCREEN_IS_FULL).equals("true") ? true : false) {
+        setScreen(getPropertyIfExists(props, ConfigProperties.SCREEN_SIZE));
+        if (getPropertyIfExists(props, ConfigProperties.SCREEN_IS_FULL).equals("true") ? true : false) {
 
         } else {
             inWindow.setSelected(true);
@@ -382,10 +313,6 @@ public class SettingsController implements IController {
         });
     }
 
-    public void setPrimaryStage(Stage primaryStage) {
-        this.appStage = primaryStage;
-    }
-
     @FXML
     void handleFullScrene(ActionEvent event) {
         fullScrene.setSelected(true);
@@ -407,50 +334,11 @@ public class SettingsController implements IController {
         checkProgress();
     }
 
-    private void checkProgress() {
-        progress.setProgress(0);
-
-        double progressValue = usePrivatePhoto.isSelected() ? 0.25 : 0.34;
-
-        if (!background.getText().isEmpty())
-            addProgressValue(progressValue);
-        else
-            messageField.setText("Выберите фон");
-
-        if (usePrivatePhoto.isSelected() && !path_to_photo.getText().isEmpty())
-            addProgressValue(progressValue);
-        else if (usePrivatePhoto.isSelected() && path_to_photo.getText().isEmpty())
-            messageField.setText("Укажите каталог с личными фото");
-
-        if (!ouput_info.getText().isEmpty())
-            addProgressValue(progressValue);
-        else
-            messageField.setText("Выберите каталог для сохранения результата");
-
-        if (!input_info.getText().isEmpty())
-            addProgressValue(progressValue);
-        else
-            messageField.setText("Выберите файл с участниками");
-
-        if (progress.getProgress() >= 0.9) {
-            messageField.setText("");
-        }
-
-    }
-
-    private void addProgressValue(double value) {
-        progress.setProgress(progress.getProgress() + value);
-    }
-
-    private void updateTextRateField() {
-        textRateField.setText((int) textRate.getValue() + "%");
-    }
-
     @FXML
     void selectListOfPlayersButtonAction(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialDirectory(FileUtils.findInitialDirectory(input_info.getText(), "\\players\\"));
-        fileChooser.setTitle("Выберите список участников");
+        fileChooser.setTitle(WindowTitles.selected_list_oj_players_title);
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("Участники", ALL_PREFIX + PLAYERS),
                 new FileChooser.ExtensionFilter("Текстовые файлы", ALL_PREFIX + TXT),
@@ -466,16 +354,17 @@ public class SettingsController implements IController {
     void selectResultDirectoryButtonAction(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialDirectory(FileUtils.findInitialDirectory(ouput_info.getText(), "\\results\\"));
-        fileChooser.setTitle("Каталог для сохранения результатов");
+        fileChooser.setTitle(WindowTitles.folder_results_title);
         fileChooser.setInitialFileName("result" + FileExtensions.DOCX);
         fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Results", ALL_PREFIX + DOCX),
+                new FileChooser.ExtensionFilter("results", ALL_PREFIX + DOCX),
                 new FileChooser.ExtensionFilter("Все", ALL_FILES));
 
         File selectedFile = fileChooser.showSaveDialog(null);
 
         if (selectedFile != null)
             ouput_info.setText(selectedFile.getAbsolutePath());
+
         checkProgress();
     }
 
@@ -502,8 +391,9 @@ public class SettingsController implements IController {
     @FXML
     void selectPhotoButtonAction(ActionEvent event) {
         DirectoryChooser directoryChooser = new DirectoryChooser();
-        directoryChooser.setInitialDirectory(FileUtils.findInitialDirectory(path_to_photo.getText(), "\\photos\\"));
-        directoryChooser.setTitle("Укажите каталог с фотографиями участников");
+        directoryChooser.setInitialDirectory(FileUtils.findInitialDirectory(path_to_photo.getText(),
+                "\\photos\\"));
+        directoryChooser.setTitle(WindowTitles.folder_photos_title);
 
         File selectedFile = directoryChooser.showDialog(null);
 
@@ -517,7 +407,7 @@ public class SettingsController implements IController {
     void selectBackgroundImageButtonAction(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialDirectory(FileUtils.findInitialDirectory(background.getText(), "\\backgrounds\\"));
-        fileChooser.setTitle("Выберите фон");
+        fileChooser.setTitle(WindowTitles.selected_background_title);
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter(
                 "Изображения",
                 ALL_PREFIX + JPEG, ALL_PREFIX + JPG));
@@ -537,10 +427,11 @@ public class SettingsController implements IController {
         }
 
         if (teamTitle.getText().length() > 15) {
-            showErrorMessageWithDefaultDelay(messageField, "Название команды слишком длинное");
+            showErrorMessageWithDefaultDelay(messageField, OutputMessages.error_team_name_lenth);
             return;
         }
 
+        //save current props
         currentProps = this.props;
         updateProps(currentProps);
 
@@ -548,11 +439,13 @@ public class SettingsController implements IController {
 
         try {
             playersFile.validateDocument();
-        } catch (IOException e) {
-            e.printStackTrace();
-            messageField.setText("Ошибка чтения файла с участниками");
         } catch (IllegalArgumentException e) {
-            messageField.setText("Файл с участниками составлен некорректно");
+            e.printStackTrace();
+            messageField.setText(e.getMessage());
+            return;
+        } catch (Exception e) {
+            e.printStackTrace();
+            messageField.setText(OutputMessages.error_write_players_file);
             return;
         }
 
@@ -563,35 +456,34 @@ public class SettingsController implements IController {
         try {
             randomizeAction = new RandomizeAction(
                     playersFile.getAllPlayers(),
-                    ouput_info.getText(),
                     teamSize,
-                    isBalansing.isSelected(),
-                    teamTitle.getText());
+                    isBalansing.isSelected());
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
             messageField.setText(e.getMessage());
             return;
         } catch (Exception e) {
             e.printStackTrace();
-            messageField.setText("Ошибка при генерации команд");
+            messageField.setText(OutputMessages.error_generation_teams);
             return;
         }
+
+        //сохранение результата
+        RandomizeAction resultSaveThread = randomizeAction;
+        Thread saveResultsThread = new Thread(() ->
+                resultSaveThread.saveResults(ouput_info.getText(), teamTitle.getText()));
+        saveResultsThread.start();
 
         RuntimeSettings.SETTING_VIEW_LAST_WIDTH = appStage.getWidth();
         RuntimeSettings.SETTING_VIEW_LAST_HEIGHT = appStage.getHeight();
 
         Screen screen = getScreen();
-        Font font = Font.loadFont(getClass().getClassLoader().getResourceAsStream("fonts/defaultFont.ttf"),
-                screen.properties.fontSize);
 
-        if (!textFont.getValue().equals("Default")) {
-            try {
-                String url = ".//fonts//" + textFont.getValue() + ".ttf";
-                String absolutePath = java.nio.file.Paths.get(url).toFile().getAbsolutePath();
-                font = Font.loadFont(Paths.FILE + absolutePath, screen.properties.fontSize);
-            } catch (Exception e) {
-                messageField.setText("Ошибка при загрузке выбранного шрифта");
-            }
+        Font font = null;
+        try {
+            font = loadFont(screen);
+        } catch (Exception e) {
+            messageField.setText(OutputMessages.error_load_font);
         }
 
         //сохранение конфигов
@@ -600,9 +492,7 @@ public class SettingsController implements IController {
 
         PreviewController previewController = initNextView(event, getNextViewName());
 
-        Image backgroundImage = new Image(Paths.FILE + background.getText());
-
-        previewController.setScreenResolution(getScreen());
+        previewController.setScreenResolution(screen);
         previewController.setTextValueRate(textRate.getValue());
         previewController.setPrimaryStage(appStage);
         previewController.setTextSettings(textColor.getValue(), font);
@@ -610,13 +500,122 @@ public class SettingsController implements IController {
         previewController.setPathToPhoto(usePrivatePhoto.isSelected(), path_to_photo.getText());
         previewController.setState(playersFile.getState());
         previewController.setTeams(randomizeAction.getResult());
-        previewController.configureViewVisibleElements(appStage, backgroundImage);
+        previewController.configureViewVisibleElements(appStage, new Image(Paths.FILE + background.getText()));
 
         previewController.setUnvisibleTableOfPlayers();
         previewController.setUnvisibleNavigateButtons();
         previewController.setFullScreenIfNeeded(fullScrene.isSelected());
 
         updateScene(appStage);
+    }
+
+    public void setPrimaryStage(Stage primaryStage) {
+        this.appStage = primaryStage;
+    }
+
+    private void updateProps(Properties props) {
+        setPropertyIfExists(props, ConfigProperties.PLAYERS_FILE, input_info.getText());
+        setPropertyIfExists(props, ConfigProperties.RESULT_FILE, ouput_info.getText());
+        setPropertyIfExists(props, ConfigProperties.TEAM_SIZE, countOfPlayers.getValue());
+        setPropertyIfExists(props, ConfigProperties.USE_BALANSE, isBalansing.isSelected() ? "true" : "false");
+        setPropertyIfExists(props, ConfigProperties.USE_PHOTO, usePrivatePhoto.isSelected() ? "true" : "false");
+        setPropertyIfExists(props, ConfigProperties.PHOTO_DIRECTORY_FILE, path_to_photo.getText());
+
+        setPropertyIfExists(props, ConfigProperties.BACKGROUD_FILE, background.getText());
+        setPropertyIfExists(props, ConfigProperties.TEXT_COLOR, textColor.getValue().toString());
+        setPropertyIfExists(props, ConfigProperties.TEXT_FONT, textFont.getValue());
+        setPropertyIfExists(props, ConfigProperties.TEXT_RATE, String.valueOf(textRate.getValue()));
+        setPropertyIfExists(props, ConfigProperties.TEAM_NAME, teamTitle.getText());
+        setPropertyIfExists(props, ConfigProperties.SCREEN_SIZE, getScreen().name);
+        setPropertyIfExists(props, ConfigProperties.SCREEN_IS_FULL, fullScrene.isSelected() ? "true" : "false");
+    }
+
+    private void setPropertyIfExists(Properties props, ConfigProperties property, String value) {
+        try {
+            props.setProperty(property.key, value);
+        } catch (Exception e) {
+            //Ignores
+        }
+    }
+
+    private String getPropertyIfExists(Properties props, ConfigProperties property) {
+        try {
+            String value = props.getProperty(property.key);
+            return value != null ? value : "";
+        } catch (Exception e) {
+            //Ignore
+        }
+
+        return "";
+    }
+
+    private void checkProgress() {
+        progress.setProgress(0);
+
+        double progressValue = usePrivatePhoto.isSelected() ? 0.25 : 0.34;
+
+        if (!background.getText().isEmpty())
+            addProgressValue(progressValue);
+        else
+            messageField.setText(OutputMessages.help_select_background_file);
+
+        if (usePrivatePhoto.isSelected() && !path_to_photo.getText().isEmpty())
+            addProgressValue(progressValue);
+        else if (usePrivatePhoto.isSelected() && path_to_photo.getText().isEmpty())
+            messageField.setText(OutputMessages.help_select_photo_folder);
+
+        if (!ouput_info.getText().isEmpty())
+            addProgressValue(progressValue);
+        else
+            messageField.setText(OutputMessages.help_select_results_folder);
+
+        if (!input_info.getText().isEmpty())
+            addProgressValue(progressValue);
+        else
+            messageField.setText(OutputMessages.help_select_players_file);
+
+        if (progress.getProgress() >= 0.9) {
+            messageField.setText("");
+        }
+
+    }
+
+    private void addProgressValue(double value) {
+        progress.setProgress(progress.getProgress() + value);
+    }
+
+    private void updateTextRateField() {
+        textRateField.setText((int) textRate.getValue() + "%");
+    }
+
+    private void scanFonts() {
+        File folder = new File(".\\fonts");
+        File[] listOfFiles = folder.listFiles();
+
+        List<String> fonts = new ArrayList<String>();
+
+        if (listOfFiles != null)
+            for (File file : listOfFiles) {
+                if (file.isFile() && file.getName().contains(FileExtensions.TTF)) {
+                    String fileName = file.getName();
+                    String fontName = fileName.substring(0, fileName.lastIndexOf("."));
+                    fonts.add(fontName);
+                }
+            }
+
+        textFont.getItems().add("Default");
+        textFont.getItems().addAll(fonts);
+        textFont.setValue("Default");
+    }
+
+    private Font loadFont(Screen screen) {
+        if (!textFont.getValue().equals("Default")) {
+            String url = ".//fonts//" + textFont.getValue() + ".ttf";
+            String absolutePath = java.nio.file.Paths.get(url).toFile().getAbsolutePath();
+            return Font.loadFont(Paths.FILE + absolutePath, screen.properties.fontSize);
+        }
+
+        return Font.loadFont(getClass().getClassLoader().getResourceAsStream(Paths.DEFAULT_FONT), screen.properties.fontSize);
     }
 
     private Screen getScreen() {

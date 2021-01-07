@@ -1,7 +1,5 @@
 package ru.demedyuk.randomize.utils;
 
-import ru.demedyuk.randomize.AppLaunch;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,6 +30,9 @@ public class FileUtils {
     public static List<String> getTextFromFile(String path) throws IOException {
         Path file = Paths.get(path);
 
-        return Files.readAllLines(file);
+        if (!file.toFile().exists())
+            throw new IllegalArgumentException("Файл " + file.getFileName() + " не существует");
+
+       return Files.readAllLines(file);
     }
 }

@@ -8,7 +8,7 @@ public class FileExtensions {
     public static final String DOCX = ".docx";
     public static final String TXT = ".txt";
     public static final String FXML = ".fxml";
-
+    public static final String TTF = ".ttf";
 
     public static final String ALL_FILES = "*.*";
     public static final String ALL_PREFIX = "*";
