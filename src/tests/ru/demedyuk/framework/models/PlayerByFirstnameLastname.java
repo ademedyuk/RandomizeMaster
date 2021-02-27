@@ -3,10 +3,10 @@ package ru.demedyuk.framework.models;
 import ru.demedyuk.framework.Data;
 import ru.demedyuk.randomize.models.Player;
 
-public class PlayerByFirstName implements IPlayer {
+public class PlayerByFirstnameLastname implements IPlayer {
 
     @Override
     public Player generate() {
-        return new Player(Data.getRandomPlayerName());
+        return new Player(Data.getRandomPlayerName(), Data.getRandomPlayerName());
     }
 }

@@ -56,7 +56,13 @@ public class InputFileReader {
             }
         }
 
-        InputFileStates etalon = states.get(0);
+        InputFileStates etalon = null;
+        try {
+            etalon = states.get(0);
+        } catch (IndexOutOfBoundsException e) {
+            throw new IllegalArgumentException("Файл *.players пустой");
+        }
+
         for (InputFileStates state : states) {
             if (!state.equals(etalon)) {
                 throw new IllegalArgumentException("Проверьте корректность файла с участниками");
