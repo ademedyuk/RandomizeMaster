@@ -43,6 +43,6 @@
             <Font size="17.0" />
          </font>
       </Text>
-      <Text fill="#ff0101" layoutX="125.0" layoutY="626.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Текст ошибки" textAlignment="CENTER" wrappingWidth="351.6708984375" />
+      <Text fx:id="errorText" fill="#ff0101" layoutX="125.0" layoutY="626.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Текст ошибки" textAlignment="CENTER" wrappingWidth="351.6708984375" />
    </children>
 </Pane>

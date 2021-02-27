@@ -15,26 +15,31 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.input.KeyEvent;
+import javafx.scene.image.Image;
 import javafx.scene.text.Text;
-import javafx.stage.Screen;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import javafx.util.converter.IntegerStringConverter;
-import ru.demedyuk.randomize.AppLaunch;
+import ru.demedyuk.randomize.constants.FileExtensions;
 import ru.demedyuk.randomize.models.Gender;
 import ru.demedyuk.randomize.models.Player;
 import ru.demedyuk.randomize.models.files.InputFileReader;
+import ru.demedyuk.randomize.models.files.InputFileStates;
 import ru.demedyuk.randomize.models.files.InputFileWriter;
+import ru.demedyuk.randomize.utils.FileUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
+
+import static ru.demedyuk.randomize.constants.FileExtensions.*;
 
 public class UserListController {
 
     private ObservableList<Player> playersData = FXCollections.observableArrayList();
     private Stage appStage;
-    private static String filePath = "C:\\Users\\demed\\Desktop\\Randomize Master\\players\\test.players";
+    private String inputFilePath;
 
     @FXML
     private TableView<Player> table;
@@ -87,10 +92,19 @@ public class UserListController {
     @FXML
     private Text girlsField;
 
-    public void initialize() {
-        initData();
+    @FXML
+    private Text errorText;
 
-        pathToPlayersField.setText(this.filePath);
+    public void showContent(String path, boolean isNew) {
+        this.inputFilePath = path;
+
+        if (isNew)
+            initEmptyData();
+        else
+            initData();
+
+        errorText.setVisible(false);
+        pathToPlayersField.setText(this.inputFilePath);
 
         table.setEditable(true);
         table.setItems(playersData);
@@ -195,22 +209,10 @@ public class UserListController {
             table.getSortOrder().addAll(firstNameColumn);
     }
 
-    private int findPlayerIndex(Player player) {
-
-        for (int i = 0; i < playersData.size(); i++) {
-            playersData.get(i).equals(player);
-            return i;
-        }
-
-        return -1;
-    }
-
-
-    public void setPrimaryStage(Stage primaryStage) {
+    public void setPrimaryStage(Stage primaryStage, String title) {
         this.appStage = primaryStage;
-        this.appStage.setResizable(false);
-
-        stageSizeChageListener(this.appStage);
+        this.appStage.getIcons().add(new Image(getClass().getClassLoader().getResourceAsStream("images/edit.png")));
+        this.appStage.setTitle(title);
     }
 
     @FXML
@@ -219,68 +221,172 @@ public class UserListController {
 
         if (selectedIndex == -1) {
             selectedIndex = table.getItems().size();
-            playersData.add(table.getItems().size(),
-                    new Player(Integer.parseInt(playersData.get(selectedIndex - 1).number) + 1,
-                            "", "", Gender.NONE));
+
+            if (selectedIndex == 0)
+                playersData.add(new Player(0, "Имя", "Фамилия"));
+            else
+                playersData.add(table.getItems().size(),
+                        new Player(Integer.parseInt(playersData.get(selectedIndex - 1).number) + 1,
+                                "", "", Gender.NONE));
+
             table.setItems(playersData);
             this.table.scrollTo(selectedIndex);
         } else {
             selectedIndex++;
             playersData.add(selectedIndex,
                     new Player(Integer.parseInt(playersData.get(selectedIndex - 1).number) + 1,
-                    "", "", Gender.NONE));
+                            "", "", Gender.NONE));
             table.setItems(playersData);
         }
         this.table.getSelectionModel().select(selectedIndex);
 
         calculate();
+        errorText.setVisible(false);
     }
 
     @FXML
     void deleteItemButtonHandler(ActionEvent event) {
         int selectedIndex = table.getSelectionModel().getSelectedIndex();
 
-        if (selectedIndex == -1)
+        if (selectedIndex == -1 || table.getItems().size() < 2)
             return;
 
         playersData.remove(selectedIndex);
         table.setItems(playersData);
 
         calculate();
+        errorText.setVisible(false);
     }
 
+    @FXML
+    void saveButtonActionHandler(ActionEvent event) {
+        if (!isValidTable(playersData))
+            return;
+
+        Optional<ButtonType> option = showDialogWindow("Save", "Сохранить изменения в файл");
+
+        if (option.get() == ButtonType.OK)
+            saveResult();
+    }
 
     @FXML
     void cancelButtonActionHandler(ActionEvent event) {
-        this.appStage.close();
-    }
-
-    @FXML
-    void okButtonActionHandler(ActionEvent event) {
-        Optional<ButtonType> option = showDialogWindow();
+        Optional<ButtonType> option = showDialogWindow("Save", "Выйти без сохранения изменений");
 
         if (option.get() == ButtonType.OK) {
             this.appStage.close();
         }
     }
 
-    private Optional<ButtonType> showDialogWindow() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Название");
+    @FXML
+    void okButtonActionHandler(ActionEvent event) {
+        if (!isValidTable(playersData))
+            return;
+
+        Optional<ButtonType> option = showDialogWindow("Save", "Сохранить изменения в файл");
+
+        if (option.get() == ButtonType.OK && saveResult()) {
+            this.appStage.close();
+        }
+    }
+
+    public String getInputFilePath() {
+        return inputFilePath;
+    }
+
+    private void initData() {
+        InputFileReader inputFileReader = new InputFileReader(inputFilePath);
+        try {
+            inputFileReader.validateDocument();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        playersData.addAll(inputFileReader.getAllPlayers());
+    }
+
+    private void initEmptyData() {
+        pathToPlayersField.clear();
+        playersData.add(new Player(1, "Имя", "Фамилия"));
+    }
+
+    private Optional<ButtonType> showDialogWindow(Alert.AlertType alertType, String title, String text) {
+        Alert alert = new Alert(alertType);
+        alert.setTitle(title);
         alert.setHeaderText("");
-        alert.setContentText("Уверены?");
+        alert.setContentText(text);
+
+        if (alertType == Alert.AlertType.ERROR) {
+            alert.getButtonTypes().clear();
+            alert.getButtonTypes().add(ButtonType.OK);
+        }
 
         return alert.showAndWait();
     }
 
-    @FXML
-    void saveButtonActionHandler(ActionEvent event) {
-        showDialogWindow();
+    private Optional<ButtonType> showDialogWindow(String title, String text) {
+        return showDialogWindow(Alert.AlertType.CONFIRMATION, title, text);
     }
 
-    private void saveResult() {
-        InputFileWriter inputFileWriter = new InputFileWriter(filePath, playersData);
-        inputFileWriter.write();
+    private boolean saveResult() {
+        if (pathToPlayersField.getText().isEmpty() && selectFileDirectory()) {
+            InputFileWriter inputFileWriter = new InputFileWriter(inputFilePath, playersData);
+            inputFileWriter.write();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean isValidTable(ObservableList<Player> playersData) {
+        Player etalonPlayer = playersData.get(0);
+
+        InputFileStates etalonState = etalonPlayer.executeState();
+
+        int i = 0;
+        for (Player player : playersData) {
+            i++;
+            if (player.executeState() != etalonState) {
+                showDialogWindow(Alert.AlertType.ERROR, "Ошибка", "Проверьте корректность полей" + i);
+                setMessage("Ошибка в строке номер " + i + "...");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void setMessage(String text) {
+        new Thread(() -> {
+            errorText.setText(text);
+            errorText.setVisible(true);
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            errorText.setVisible(false);
+        }).start();
+    }
+
+    private boolean selectFileDirectory() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setInitialDirectory(FileUtils.makeDirsIfNotExists("\\results\\"));
+        fileChooser.setTitle("Каталог для сохранения cписка участников");
+        fileChooser.setInitialFileName("players" + PLAYERS);
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Results", ALL_PREFIX + PLAYERS),
+                new FileChooser.ExtensionFilter("Все", ALL_FILES));
+
+        File selectedFile = fileChooser.showSaveDialog(null);
+
+        if (selectedFile != null) {
+            inputFilePath = selectedFile.getAbsolutePath();
+            return true;
+        }
+
+        return false;
     }
 
     private void calculate() {
@@ -309,7 +415,7 @@ public class UserListController {
     }
 
 
-    private void stageSizeChageListener(Stage stage) {
+    private void stageSizeChangeListener(Stage stage) {
         stage.widthProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
@@ -331,17 +437,5 @@ public class UserListController {
             }
         });
     }
-
-    private void initData() {
-        InputFileReader inputFileReader = new InputFileReader(filePath);
-        try {
-            inputFileReader.validateDocument();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        playersData.addAll(inputFileReader.getAllPlayers());
-    }
-
 }
 

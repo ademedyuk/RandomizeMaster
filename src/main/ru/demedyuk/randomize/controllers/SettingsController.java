@@ -78,11 +78,13 @@ public class SettingsController implements IController {
 
         List<String> fonts = new ArrayList<String>();
 
-        for (File file : listOfFiles) {
-            if (file.isFile() && file.getName().contains(".ttf")) {
-                String fileName = file.getName();
-                String fontName = fileName.substring(0, fileName.lastIndexOf("."));
-                fonts.add(fontName);
+        if (listOfFiles != null) {
+            for (File file : listOfFiles) {
+                if (file.isFile() && file.getName().contains(".ttf")) {
+                    String fileName = file.getName();
+                    String fontName = fileName.substring(0, fileName.lastIndexOf("."));
+                    fonts.add(fontName);
+                }
             }
         }
 
@@ -188,6 +190,10 @@ public class SettingsController implements IController {
     private TextField input_info;
     @FXML
     private Button selectListOfPlayersButton;
+    @FXML
+    private Button createListOfPlayersButton;
+    @FXML
+    private Button editListOfPlayersButton;
 
     @FXML
     public TextField ouput_info;
@@ -243,6 +249,7 @@ public class SettingsController implements IController {
     private ColorPicker textColor;
 
     public void initScene() {
+        editListOfPlayersButton.setDisable(true);
         countOfPlayers.getItems().addAll("2 участника",
                 "3 участника",
                 "4 участника",
@@ -350,9 +357,7 @@ public class SettingsController implements IController {
         else
             messageField.setText("Выберите фон");
 
-        if (!usePrivatePhoto.isSelected())
-            addProgressValue();
-        else if (usePrivatePhoto.isSelected() && !path_to_photo.getText().isEmpty())
+        if (usePrivatePhoto.isSelected() && !path_to_photo.getText().isEmpty())
             addProgressValue();
         else if (usePrivatePhoto.isSelected() && path_to_photo.getText().isEmpty())
             messageField.setText("Укажите каталог с личными фото");
@@ -368,14 +373,13 @@ public class SettingsController implements IController {
             messageField.setText("Выберите файл с участниками");
 
         if (progress.getProgress() >= 0.9) {
-            messageField.setText("");
+            messageField.setText("Все готово, можно начинать!");
         }
-
     }
 
     private void addProgressValue() {
         double fixValue = usePrivatePhoto.isSelected() ? PROGRESS_VALUE : 0.34;
-        progress.setProgress(progress.getProgress() + PROGRESS_VALUE);
+        progress.setProgress(progress.getProgress() + fixValue);
     }
 
     @FXML
@@ -389,8 +393,70 @@ public class SettingsController implements IController {
                 new FileChooser.ExtensionFilter("Все", ALL_FILES));
         File selectedFile = fileChooser.showOpenDialog(null);
 
-        if (selectedFile != null)
+        if (selectedFile != null) {
             input_info.setText(selectedFile.getAbsolutePath());
+            editListOfPlayersButton.setDisable(false);
+        }
+
+        checkProgress();
+    }
+
+    @FXML
+    void createListOfPlayersButtonAction(ActionEvent event) {
+        URL locationUrl = getClass().getClassLoader().getResource("views/UserListView" + FXML);
+
+        FXMLLoader loader = new FXMLLoader(locationUrl);
+
+        Stage stage = new Stage();
+        try {
+            stage.setScene(new Scene((Pane) loader.load()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        stage.initModality(Modality.APPLICATION_MODAL);
+
+        UserListController userListController = loader.<UserListController>getController();
+        userListController.setPrimaryStage(stage, "Новый список игроков");
+        userListController.showContent(input_info.getText(), true);
+
+        stage.setResizable(false);
+        stage.showAndWait();
+
+        String inputFilePath = userListController.getInputFilePath();
+        if (inputFilePath != null && !inputFilePath.isEmpty()) {
+            input_info.setText(inputFilePath);
+            editListOfPlayersButton.setDisable(false);
+        }
+        checkProgress();
+    }
+
+    @FXML
+    void editListOfPlayersButtonAction(ActionEvent event) {
+        URL locationUrl = getClass().getClassLoader().getResource("views/UserListView" + FXML);
+
+        FXMLLoader loader = new FXMLLoader(locationUrl);
+
+        Stage stage = new Stage();
+        try {
+            stage.setScene(new Scene((Pane) loader.load()));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        stage.initModality(Modality.APPLICATION_MODAL);
+
+        UserListController userListController = loader.<UserListController>getController();
+        userListController.showContent(input_info.getText(), false);
+
+        stage.setResizable(false);
+        userListController.setPrimaryStage(stage, "Редактирование списка игроков");
+        stage.showAndWait();
+
+        String inputFilePath = userListController.getInputFilePath();
+        if (inputFilePath != null && !inputFilePath.isEmpty())
+            input_info.setText(inputFilePath);
         checkProgress();
     }
 

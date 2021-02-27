@@ -1,10 +1,13 @@
 package ru.demedyuk.randomize.models;
 
+import ru.demedyuk.randomize.models.files.InputFileStates;
+
 public class Player {
     public String number = "";
     public String firstName;
     public String lastName;
     public Gender gender = Gender.NONE;
+    public InputFileStates state;
 
     public Player(String firstName) {
         this.firstName = firstName;
@@ -66,5 +69,29 @@ public class Player {
 
     public void setNumber(int number) {
         this.number = String.valueOf(number);
+    }
+
+    public InputFileStates executeState() {
+        boolean numberIsExists = !this.number.trim().isEmpty();
+        boolean firstNameIsExists = !this.firstName.trim().isEmpty();
+        boolean lastNameIsExists = !this.lastName.trim().isEmpty();
+        boolean genderIsExists = this.gender == Gender.NONE ? false : true;
+
+        if (numberIsExists && firstNameIsExists && lastNameIsExists && genderIsExists)
+            return InputFileStates.NUMBER_FIRTSNAME_LASTNAME_GENDER;
+
+        if (numberIsExists && firstNameIsExists && lastNameIsExists)
+            return InputFileStates.NUMBER_FIRTSNAME_LASTNAME;
+
+        if (firstNameIsExists && lastNameIsExists && genderIsExists)
+            return InputFileStates.NUMBER_FIRTSNAME_LASTNAME;
+
+        if (firstNameIsExists && lastNameIsExists)
+            return InputFileStates.FIRTSNAME_LASTNAME;
+
+        if (firstNameIsExists)
+            return InputFileStates.FIRTSNAME;
+
+        return InputFileStates.NOT_VALID;
     }
 }
