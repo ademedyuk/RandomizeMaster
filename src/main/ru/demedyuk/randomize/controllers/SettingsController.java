@@ -6,7 +6,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.effect.Effect;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -113,6 +115,8 @@ public class SettingsController implements IController {
     private Button createListOfPlayersButton;
     @FXML
     private Button editListOfPlayersButton;
+    @FXML
+    private ImageView play;
 
     @FXML
     void fileActionHandler(ActionEvent event) {
@@ -485,8 +489,35 @@ public class SettingsController implements IController {
         checkProgress();
     }
 
+    private synchronized void playButtonEffect() {
+        double startWidth = play.getFitWidth();
+        double startHeight = play.getFitHeight();
+        double startLayoutX = play.getLayoutX();
+        double startLayoutY = play.getLayoutY();
+
+        play.setFitWidth(startWidth * 0.85);
+        play.setFitHeight(startHeight * 0.85);
+        play.setLayoutX(startLayoutX + (startWidth * 0.15)/2);
+        play.setLayoutY(startLayoutY + (startHeight * 0.15)/2);
+
+        try {
+            Thread.sleep(150);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        play.setFitWidth(startWidth);
+        play.setFitHeight(startHeight);
+        play.setLayoutX(startLayoutX);
+        play.setLayoutY(startLayoutY);
+    }
+
     @FXML
     void handleLaunchButtonAction(ActionEvent event) {
+        new Thread(() -> {
+            playButtonEffect();
+        }).start();
+
         checkProgress();
         if (progress.getProgress() < 0.99) {
             return;
