@@ -109,6 +109,10 @@ public class SettingsController implements IController {
     private Slider textRate;
     @FXML
     private TextField textRateField;
+    @FXML
+    private Button createListOfPlayersButton;
+    @FXML
+    private Button editListOfPlayersButton;
 
     @FXML
     void fileActionHandler(ActionEvent event) {
@@ -345,8 +349,70 @@ public class SettingsController implements IController {
                 new FileChooser.ExtensionFilter("Все", ALL_FILES));
         File selectedFile = fileChooser.showOpenDialog(null);
 
-        if (selectedFile != null)
+        if (selectedFile != null) {
             input_info.setText(selectedFile.getAbsolutePath());
+            editListOfPlayersButton.setDisable(false);
+        }
+
+        checkProgress();
+    }
+
+    @FXML
+    void createListOfPlayersButtonAction(ActionEvent event) {
+        URL locationUrl = getClass().getClassLoader().getResource("views/UserListView" + FXML);
+
+        FXMLLoader loader = new FXMLLoader(locationUrl);
+
+        Stage stage = new Stage();
+        try {
+            stage.setScene(new Scene((Pane) loader.load()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        stage.initModality(Modality.APPLICATION_MODAL);
+
+        UserListController userListController = loader.<UserListController>getController();
+        userListController.setPrimaryStage(stage, "Новый список игроков");
+        userListController.showContent(input_info.getText(), true);
+
+        stage.setResizable(false);
+        stage.showAndWait();
+
+        String inputFilePath = userListController.getInputFilePath();
+        if (inputFilePath != null && !inputFilePath.isEmpty()) {
+            input_info.setText(inputFilePath);
+            editListOfPlayersButton.setDisable(false);
+        }
+        checkProgress();
+    }
+
+    @FXML
+    void editListOfPlayersButtonAction(ActionEvent event) {
+        URL locationUrl = getClass().getClassLoader().getResource("views/UserListView" + FXML);
+
+        FXMLLoader loader = new FXMLLoader(locationUrl);
+
+        Stage stage = new Stage();
+        try {
+            stage.setScene(new Scene((Pane) loader.load()));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        stage.initModality(Modality.APPLICATION_MODAL);
+
+        UserListController userListController = loader.<UserListController>getController();
+        userListController.showContent(input_info.getText(), false);
+
+        stage.setResizable(false);
+        userListController.setPrimaryStage(stage, "Редактирование списка игроков");
+        stage.showAndWait();
+
+        String inputFilePath = userListController.getInputFilePath();
+        if (inputFilePath != null && !inputFilePath.isEmpty())
+            input_info.setText(inputFilePath);
         checkProgress();
     }
 
