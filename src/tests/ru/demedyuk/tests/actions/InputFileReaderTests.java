@@ -109,7 +109,7 @@ public class InputFileReaderTests {
         String path = getResourcePath("players/invalid/wrongOrderArguments_1.players");
         InputFileReader inputFile = validateDocument(path);
 
-        Assertions.assertEquals( InputFileStates.NOT_VALID, inputFile.getState());
+        Assertions.assertEquals(InputFileStates.NOT_VALID, inputFile.getState());
     }
 
     @Test

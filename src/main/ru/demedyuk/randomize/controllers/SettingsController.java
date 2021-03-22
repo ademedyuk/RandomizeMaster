@@ -820,7 +820,7 @@ public class SettingsController implements IController {
         allFonts = new HashMap<>();
 
         for (String fontName : allFontsNames) {
-            allFonts.put(fontName, loadFont(fontName, 20));
+            allFonts.put(fontName, loadFont(fontName, 22));
         }
     }
 

@@ -134,7 +134,7 @@
              <Button fx:id="launch" layoutX="572.0" layoutY="737.0" mnemonicParsing="false" onAction="#handleLaunchButtonAction" opacity="0.0" prefHeight="64.0" prefWidth="64.0" />
              <Button fx:id="createListOfPlayersButton" layoutX="201.0" layoutY="69.0" mnemonicParsing="false" onAction="#createListOfPlayersButtonAction" prefHeight="31.0" prefWidth="92.0" text="Создать" />
              <Button fx:id="editListOfPlayersButton" disable="true" layoutX="300.0" layoutY="69.0" mnemonicParsing="false" onAction="#editListOfPlayersButtonAction" prefHeight="31.0" prefWidth="91.0" text="Изменить" />
-            <Label fx:id="textPreview" alignment="BASELINE_CENTER" layoutX="422.0" layoutY="439.0" prefHeight="76.0" prefWidth="284.0" style="-fx-background-color: #DBDBDB;" text="Персона/Persona" textAlignment="CENTER">
+            <Label fx:id="textPreview" alignment="BASELINE_CENTER" layoutX="422.0" layoutY="439.0" prefHeight="76.0" prefWidth="362.0" style="-fx-background-color: #DBDBDB;" text="Персона/Persona" textAlignment="CENTER">
                <font>
                   <Font size="20.0" />
                </font>
