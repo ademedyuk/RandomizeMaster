@@ -19,8 +19,8 @@ import java.net.URL;
 
 public class AppLaunch extends Application {
 
-    public static final String VERSION = "2.2";
-    public static final String RELEASE_DATE = "05.01.2021";
+    public static final String VERSION = "3.0";
+    public static final String RELEASE_DATE = "22.03.2021";
 
     private Stage appStage;
 

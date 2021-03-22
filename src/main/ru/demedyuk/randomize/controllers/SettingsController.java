@@ -22,6 +22,7 @@ import ru.demedyuk.randomize.configuration.properties.ActionProperties;
 import ru.demedyuk.randomize.configuration.properties.ConfigProperties;
 import ru.demedyuk.randomize.configuration.screen.Screen;
 import ru.demedyuk.randomize.constants.FileExtensions;
+import ru.demedyuk.randomize.constants.Fonts;
 import ru.demedyuk.randomize.constants.Paths;
 import ru.demedyuk.randomize.messages.About;
 import ru.demedyuk.randomize.messages.OutputMessages;
@@ -52,8 +53,8 @@ public class SettingsController implements IController {
     private Properties props;
     private static Properties currentProps;
     private static String pathToConfig;
-    private ArrayList<String> allFontsNames;
-    private HashMap<String, Font> allFonts;
+    private ArrayList<String> allFontsNames = new ArrayList<String>();
+    private HashMap<String, Font> allFonts = new HashMap<>();
 
     @FXML
     void quitMenuItemActionHandler(ActionEvent event) {
@@ -771,15 +772,7 @@ public class SettingsController implements IController {
     }
 
     private void scanFonts() {
-        allFontsNames = new ArrayList<String>();
-
-        File[] defaultFiles = null;
-        try {
-            defaultFiles = new File(getClass().getClassLoader().getResource("fonts/").toURI()).listFiles();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-        findFontsInDirectory(defaultFiles);
+        addDefaultFonts();
 
         File externalFiles = new File(".\\fonts");
         File[] listOfFiles = externalFiles.listFiles();
@@ -794,7 +787,16 @@ public class SettingsController implements IController {
         textPreview.setTextFill(textColor.getValue());
     }
 
+    private void addDefaultFonts() {
+        for (String fontName : Fonts.fonts) {
+            allFontsNames.add(fontName);
+        }
+    }
+
     private void findFontsInDirectory(File[] defaultFiles) {
+        if (defaultFiles == null)
+            return;
+
         for (File file : defaultFiles) {
             if (file.isFile() && file.getName().endsWith(FileExtensions.TTF)) {
                 String fileName = file.getName();
@@ -824,7 +826,7 @@ public class SettingsController implements IController {
 
     private Font loadFont(String fontName, double size) {
         try {
-            return Font.loadFont(getClass().getClassLoader().getResourceAsStream(Paths.DEFAULT_FONTS + fontName + TTF), size);
+            return Font.loadFont(getClass().getClassLoader().getResourceAsStream(Paths.DEFAULT_FONT_PATH + fontName + TTF), size);
         } catch (Exception e) {
             String url = ".//fonts//" + fontName + TTF;
             String absolutePath = java.nio.file.Paths.get(url).toFile().getAbsolutePath();
