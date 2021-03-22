@@ -18,6 +18,11 @@ public class Player {
         this.lastName = lastName;
     }
 
+    public Player(int number, String firstName) {
+        this.number = String.valueOf(number);
+        this.firstName = firstName;
+    }
+
     public Player(int number, String firstName, String lastName) {
         this.number = String.valueOf(number);
         this.firstName = firstName;
@@ -55,6 +60,10 @@ public class Player {
         this.gender = gender;
     }
 
+    public int getNumber() {
+        return Integer.parseInt(number);
+    }
+
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
@@ -72,24 +81,27 @@ public class Player {
     }
 
     public InputFileStates executeState() {
-        boolean numberIsExists = !this.number.trim().isEmpty();
-        boolean firstNameIsExists = !this.firstName.trim().isEmpty();
-        boolean lastNameIsExists = !this.lastName.trim().isEmpty();
+        boolean numberIsExists = this.number != null ? !this.number.trim().isEmpty() : false;
+        boolean firstNameIsExists = this.firstName != null ? !this.firstName.trim().isEmpty() : false;
+        boolean lastNameIsExists = this.lastName != null ?  !this.lastName.trim().isEmpty(): false;
         boolean genderIsExists = this.gender == Gender.NONE ? false : true;
 
         if (numberIsExists && firstNameIsExists && lastNameIsExists && genderIsExists)
             return InputFileStates.NUMBER_FIRTSNAME_LASTNAME_GENDER;
 
-        if (numberIsExists && firstNameIsExists && lastNameIsExists)
+        if (numberIsExists && firstNameIsExists && lastNameIsExists && !genderIsExists)
             return InputFileStates.NUMBER_FIRTSNAME_LASTNAME;
 
-        if (firstNameIsExists && lastNameIsExists && genderIsExists)
-            return InputFileStates.NUMBER_FIRTSNAME_LASTNAME;
+        if (!numberIsExists && firstNameIsExists && lastNameIsExists && genderIsExists)
+            return InputFileStates.FIRTSNAME_LASTNAME_GENDER;
 
-        if (firstNameIsExists && lastNameIsExists)
+        if (!numberIsExists && firstNameIsExists && lastNameIsExists && !genderIsExists)
             return InputFileStates.FIRTSNAME_LASTNAME;
 
-        if (firstNameIsExists)
+        if (numberIsExists && firstNameIsExists && !lastNameIsExists && !genderIsExists)
+            return InputFileStates.NUMBER_FIRTSNAME;
+
+        if (!numberIsExists && firstNameIsExists && !lastNameIsExists && !genderIsExists)
             return InputFileStates.FIRTSNAME;
 
         return InputFileStates.NOT_VALID;

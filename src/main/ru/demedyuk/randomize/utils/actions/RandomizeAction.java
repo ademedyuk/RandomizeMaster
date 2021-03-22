@@ -27,7 +27,7 @@ public class RandomizeAction {
 
     public RandomizeAction(List<Player> allPlayers, int teamSize, boolean needBalance) {
         if (teamSize >= allPlayers.size())
-            throw new IllegalArgumentException("Общее количество игроков, должно превышать выбранный размер команды");
+            throw new IllegalArgumentException("Общее количество игроков должно превышать выбранный размер команды");
 
         this.allPlayers = allPlayers;
         this.teamSize = teamSize;

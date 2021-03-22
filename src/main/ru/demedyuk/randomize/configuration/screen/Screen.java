@@ -29,7 +29,7 @@ public enum Screen {
             .setNameCoefficientY(8)),
 
     _1920x1080("1920x1080", new ScreenProperties(1920, 1080, 55)
-            .setPreviousButtonLayouts(1574, 955)
+            .setPreviousButtonLayouts(1640, 955)
             .setNextButtonLayouts(1730, 955)
             .setPrefSizeSwitchButtons(145, 39)
             .setFontSwitchButtons(Font.font(25))

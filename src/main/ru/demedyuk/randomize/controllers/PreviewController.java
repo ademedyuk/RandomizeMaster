@@ -122,12 +122,16 @@ public class PreviewController implements IController {
 
     @FXML
     private Button startButton;
-
+    @FXML
+    private ImageView startIcon;
     @FXML
     private Button nextButton;
-
+    @FXML
+    private ImageView nextIcon;
     @FXML
     private Button previousButton;
+    @FXML
+    private ImageView previousIcon;
 
     private static Label[] names;
     private ImageView[] photos;
@@ -139,9 +143,10 @@ public class PreviewController implements IController {
     @FXML
     void handleStartButtonAction(ActionEvent event) {
         currentPageIndex = 0;
-        startButton.setVisible(false);
+        startIcon.setVisible(false);
+
         setVisibleNavigateButtons(true);
-        handleNextButtonAction(event);
+        handleNextButtonAction(null);
     }
 
     @FXML
@@ -150,6 +155,7 @@ public class PreviewController implements IController {
             return;
 
         currentPageIndex--;
+        new Thread(() -> playButtonEffect(previousIcon)).start();
         showNewList();
     }
 
@@ -159,6 +165,8 @@ public class PreviewController implements IController {
             return;
 
         currentPageIndex++;
+        if (event != null)
+            new Thread(() -> playButtonEffect(nextIcon)).start();
         showNewList();
     }
 
@@ -206,6 +214,11 @@ public class PreviewController implements IController {
             names[index].setText(player.number + " " + player.firstName + " " + player.lastName);
             return;
         }
+
+        if (this.state.equals(InputFileStates.NUMBER_FIRTSNAME)) {
+            names[index].setText(player.number + " " + player.firstName);
+            return;
+        }
     }
 
     private void cleanTable() {
@@ -225,7 +238,9 @@ public class PreviewController implements IController {
 
     public void setVisibleNavigateButtons(boolean value) {
         nextButton.setVisible(value);
+        nextIcon.setVisible(value);
         previousButton.setVisible(value);
+        previousIcon.setVisible(value);
     }
 
     public void setUnvisibleTableOfPlayers() {
@@ -255,6 +270,9 @@ public class PreviewController implements IController {
     }
 
     public void configureViewVisibleElements(Stage stage, Image image) {
+        this.appStage = stage;
+        addHotkeysEvents();
+
         previousButton.setOnKeyReleased((event) -> {
             if (event.getCode() == new KeyCodeCombination(KeyCode.LEFT).getCode()) {
                 handlePreviousButtonAction(new ActionEvent());
@@ -266,9 +284,6 @@ public class PreviewController implements IController {
                 handleNextButtonAction(new ActionEvent());
             }
         });
-
-        this.appStage = stage;
-        addHotkeysEvents();
 
         names = new Label[]{name1, name2, name3, name4, name5, name6, name7, name8, name9};
         photos = new ImageView[]{photo1, photo2, photo3, photo4, photo5, photo6, photo7, photo8, photo9};
@@ -286,19 +301,26 @@ public class PreviewController implements IController {
         appStage.setHeight(screenResolutionProperties.height);
         appStage.setWidth(screenResolutionProperties.width);
 
-        startButton.setLayoutX(screenResolutionProperties.width / 2 - startButton.getPrefWidth() / 2);
-        startButton.setLayoutY(screenResolutionProperties.height / 2 - startButton.getPrefHeight() / 2);
+        startIcon.setLayoutX(screenResolutionProperties.width / 2 - startIcon.getFitWidth() / 2);
+        startIcon.setLayoutY(screenResolutionProperties.height / 2 - startIcon.getFitHeight() / 2);
+        startButton.setPrefSize(startIcon.getFitWidth(), startIcon.getFitHeight());
+        startButton.setLayoutX(startIcon.getLayoutX());
+        startButton.setLayoutY(startIcon.getLayoutY());
 
         //buttons
-        previousButton.setPrefSize(screenResolutionProperties.previousButton.getPrefWidth(), screenResolutionProperties.previousButton.getPrefHeight());
         previousButton.setLayoutX(screenResolutionProperties.previousButton.getLayoutX());
+        previousIcon.setLayoutX(screenResolutionProperties.previousButton.getLayoutX());
         previousButton.setLayoutY(screenResolutionProperties.previousButton.getLayoutY());
-        previousButton.setFont(screenResolutionProperties.previousButton.getFont());
+        previousIcon.setLayoutY(screenResolutionProperties.previousButton.getLayoutY());
+        previousButton.setPrefSize(previousIcon.getFitWidth(), previousIcon.getFitHeight());
+        //previousButton.setOpacity(1);//debug
 
-        nextButton.setPrefSize(screenResolutionProperties.nextButton.getPrefWidth(), screenResolutionProperties.nextButton.getPrefHeight());
         nextButton.setLayoutX(screenResolutionProperties.nextButton.getLayoutX());
+        nextIcon.setLayoutX(screenResolutionProperties.nextButton.getLayoutX());
         nextButton.setLayoutY(screenResolutionProperties.nextButton.getLayoutY());
-        nextButton.setFont(screenResolutionProperties.nextButton.getFont());
+        nextIcon.setLayoutY(screenResolutionProperties.nextButton.getLayoutY());
+        nextButton.setPrefSize(nextIcon.getFitWidth(), nextIcon.getFitHeight());
+        //nextButton.setOpacity(1);//debug
 
         teamLabel.setFont(this.font);
         teamLabel.setLayoutX(screenResolutionProperties.width / 2 - teamLabel.getPrefWidth() / 2);
@@ -355,6 +377,29 @@ public class PreviewController implements IController {
                 photos[i].setLayoutY(photos[i].getLayoutY() + newY);
             }
         }
+    }
+
+    private synchronized void playButtonEffect(ImageView nextIcon) {
+        double startWidth = nextIcon.getFitWidth();
+        double startHeight = nextIcon.getFitHeight();
+        double startLayoutX = nextIcon.getLayoutX();
+        double startLayoutY = nextIcon.getLayoutY();
+
+        nextIcon.setFitWidth(startWidth * 0.85);
+        nextIcon.setFitHeight(startHeight * 0.85);
+        nextIcon.setLayoutX(startLayoutX + (startWidth * 0.15) / 2);
+        nextIcon.setLayoutY(startLayoutY + (startHeight * 0.15) / 2);
+
+        try {
+            Thread.sleep(150);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        nextIcon.setFitWidth(startWidth);
+        nextIcon.setFitHeight(startHeight);
+        nextIcon.setLayoutX(startLayoutX);
+        nextIcon.setLayoutY(startLayoutY);
     }
 
     private int initMaxCount() {
@@ -440,17 +485,17 @@ public class PreviewController implements IController {
         return "";
     }
 
-
-    private KeyCombination restartHotKey;
-    private KeyCombination fullScreenHotKey;
+    private KeyCombination restartHotKey = new KeyCodeCombination(KeyCode.R, KeyCombination.CONTROL_DOWN);
+    private KeyCombination fullScreenHotKey = new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN);
+    private KeyCombination nextButtonHotKey = new KeyCodeCombination(KeyCode.RIGHT);
+    private KeyCombination previousButtonHotKey = new KeyCodeCombination(KeyCode.LEFT);
+    private KeyCombination startButtonHotKey = new KeyCodeCombination(KeyCode.ENTER);
 
     private void addHotkeysEvents() {
-        restartHotKey = new KeyCodeCombination(KeyCode.R, KeyCombination.CONTROL_DOWN);
-
         appStage.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             if (restartHotKey.match(event)) {
                 SettingsController settingsController = initNextView(new ActionEvent(), getNextViewName());
-                settingsController.initScene();
+                settingsController.initScene(this.appStage);
 
                 appStage.setWidth(RuntimeSettings.SETTING_VIEW_LAST_WIDTH);
                 appStage.setHeight(RuntimeSettings.SETTING_VIEW_LAST_HEIGHT);
@@ -459,10 +504,27 @@ public class PreviewController implements IController {
             }
         });
 
-        fullScreenHotKey = new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN);
         appStage.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             if (fullScreenHotKey.match(event)) {
                 appStage.setFullScreen(true);
+            }
+        });
+
+        appStage.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (previousButtonHotKey.match(event)) {
+                handlePreviousButtonAction(new ActionEvent());
+            }
+        });
+
+        appStage.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (nextButtonHotKey.match(event)) {
+                handleNextButtonAction(new ActionEvent());
+            }
+        });
+
+        appStage.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (startButtonHotKey.match(event)) {
+                handleStartButtonAction(new ActionEvent());
             }
         });
     }

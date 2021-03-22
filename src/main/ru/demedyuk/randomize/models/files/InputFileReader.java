@@ -26,7 +26,7 @@ public class InputFileReader {
 
         for (String line : lines) {
             String delimeter = " "; // Разделитель
-            String[] subStr = line.split(delimeter);
+            String[] subStr = line.trim().split(delimeter);
 
             switch (subStr.length) {
                 case (1):
@@ -34,8 +34,14 @@ public class InputFileReader {
                     allPlayers.add(new Player(subStr[0]));
                     break;
                 case (2):
-                    states.add(isValidFirstNameAndLastName(subStr) ? FIRTSNAME_LASTNAME : NOT_VALID);
-                    allPlayers.add(new Player(subStr[0], subStr[1]));
+                    if (isValidFirstNameAndLastName(subStr)) {
+                        states.add(FIRTSNAME_LASTNAME);
+                        allPlayers.add(new Player(subStr[0], subStr[1]));
+                    } else if (isValidNumberAndFirstName(subStr)) {
+                        states.add(NUMBER_FIRTSNAME);
+                        allPlayers.add(new Player(Integer.parseInt(subStr[0]), subStr[1]));
+                    } else
+                        states.add(NOT_VALID);
                     break;
                 case (3):
                     if (isValidNumberFirstNameAndLastName(subStr)) {
@@ -62,6 +68,9 @@ public class InputFileReader {
         } catch (IndexOutOfBoundsException e) {
             throw new IllegalArgumentException("Файл *.players пустой");
         }
+
+        if (etalon == NOT_VALID)
+            throw new IllegalArgumentException("Проверьте корректность файла с участниками");
 
         for (InputFileStates state : states) {
             if (!state.equals(etalon)) {
@@ -98,6 +107,10 @@ public class InputFileReader {
 
     private boolean isValidFirstNameAndLastName(String[] str) {
         return (!isInt(str[0]) && !isInt(str[1])) ? true : false;
+    }
+
+    private boolean isValidNumberAndFirstName(String[] str) {
+        return (isInt(str[0]) && !isInt(str[1])) ? true : false;
     }
 
     private boolean isValidNumberFirstNameAndLastName(String[] str) {

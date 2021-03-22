@@ -1,12 +1,12 @@
 package ru.demedyuk.randomize.controllers;
 
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.effect.Effect;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -15,10 +15,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
+import javafx.stage.*;
 import ru.demedyuk.randomize.AppLaunch;
 import ru.demedyuk.randomize.configuration.RuntimeSettings;
 import ru.demedyuk.randomize.configuration.properties.ActionProperties;
@@ -35,6 +32,7 @@ import ru.demedyuk.randomize.utils.FileUtils;
 import ru.demedyuk.randomize.utils.actions.RandomizeAction;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 
@@ -50,12 +48,18 @@ import static ru.demedyuk.randomize.utils.actions.OutputMessageActions.showError
 public class SettingsController implements IController {
 
     private Stage appStage;
+    private boolean isDirty = false;
     private Properties props;
     private static Properties currentProps;
     private static String pathToConfig;
+    private ArrayList<String> allFontsNames;
+    private HashMap<String, Font> allFonts;
 
     @FXML
     void quitMenuItemActionHandler(ActionEvent event) {
+        if (checkUnsavedChanges("Закрыть приложение"))
+            return;
+
         AppLaunch.stopApplication();
     }
 
@@ -70,7 +74,7 @@ public class SettingsController implements IController {
     @FXML
     private ChoiceBox<String> countOfPlayers = new ChoiceBox<String>();
     @FXML
-    private ChoiceBox<String> textFont = new ChoiceBox<String>();
+    private ComboBox<String> textFont = new ComboBox<String>();
     @FXML
     private CheckBox isBalansing;
     @FXML
@@ -108,6 +112,8 @@ public class SettingsController implements IController {
     @FXML
     private ColorPicker textColor;
     @FXML
+    private Label textPreview;
+    @FXML
     private Slider textRate;
     @FXML
     private TextField textRateField;
@@ -116,7 +122,7 @@ public class SettingsController implements IController {
     @FXML
     private Button editListOfPlayersButton;
     @FXML
-    private ImageView play;
+    private ImageView playIcon;
 
     @FXML
     void fileActionHandler(ActionEvent event) {
@@ -124,6 +130,11 @@ public class SettingsController implements IController {
 
     @FXML
     void fileNewActionHandler(ActionEvent event) {
+        if (checkUnsavedChanges("Новая конфигурация"))
+            return;
+
+        setDirty(false);
+
         input_info.setText("");
         ouput_info.setText("");
         countOfPlayers.setValue("2 участника");
@@ -145,10 +156,28 @@ public class SettingsController implements IController {
 
         appStage.setTitle(main_title);
         updateProps(this.props);
+
+        editListOfPlayersButton.setDisable(input_info.getText().isEmpty());
+    }
+
+    private boolean checkUnsavedChanges(String title) {
+        if (this.isDirty) {
+            Optional<ButtonType> option = showDialogWindow(Alert.AlertType.CONFIRMATION,
+                    title, "Все несохраненные изменения будут потеряны. Продолжить?");
+
+            if (option.get() != ButtonType.OK)
+                return true;
+
+        }
+        return false;
     }
 
     @FXML
     void fileOpenActionHandler(ActionEvent event) {
+        if (checkUnsavedChanges("Новая конфигурация"))
+            return;
+
+        setDirty(false);
         File configDirectory = makeDirsIfNotExists("\\configs");
 
         FileChooser fileChooser = new FileChooser();
@@ -167,6 +196,8 @@ public class SettingsController implements IController {
         }
 
         initConfig(event, pathToConfig, this.props);
+
+        editListOfPlayersButton.setDisable(input_info.getText().isEmpty());
     }
 
     @FXML
@@ -177,6 +208,7 @@ public class SettingsController implements IController {
             ActionProperties.saveProperties(this.props, pathToConfig);
         else
             fileSaveAsActionHandler(event);
+        setDirty(false);
     }
 
     @FXML
@@ -191,6 +223,7 @@ public class SettingsController implements IController {
         File selectedFile = fileChooser.showSaveDialog(null);
 
         pathToConfig = ActionProperties.saveProperties(this.props, selectedFile);
+        setDirty(false);
     }
 
     @FXML
@@ -207,7 +240,12 @@ public class SettingsController implements IController {
         dialog.show();
     }
 
-    public void initScene() {
+    public void initScene(Stage appStage) {
+        appStage.setOnCloseRequest(event -> {
+            if (checkUnsavedChanges("Закрыть приложение"))
+                event.consume();
+        });
+
         countOfPlayers.getItems().addAll("2 участника",
                 "3 участника",
                 "4 участника",
@@ -245,6 +283,20 @@ public class SettingsController implements IController {
         }
 
         initConfig(null, this.pathToConfig, currentProps != null ? currentProps : this.props);
+        editListOfPlayersButton.setDisable(input_info.getText().isEmpty());
+    }
+
+    private void setDirty(boolean value) {
+        this.isDirty = value;
+
+        String currentTeamTitle = this.appStage.getTitle();
+
+        if (value && !currentTeamTitle.startsWith("*"))
+            this.appStage.setTitle("*" + currentTeamTitle);
+
+        if (!value && currentTeamTitle.startsWith("*"))
+            this.appStage.setTitle(currentTeamTitle.substring(1));
+
     }
 
     public void initConfig(ActionEvent event, String path, Properties props) {
@@ -325,12 +377,14 @@ public class SettingsController implements IController {
     void handleFullScrene(ActionEvent event) {
         fullScrene.setSelected(true);
         inWindow.setSelected(false);
+        setDirty(true);
     }
 
     @FXML
     void handleInWindow(ActionEvent event) {
         inWindow.setSelected(true);
         fullScrene.setSelected(false);
+        setDirty(true);
     }
 
     @FXML
@@ -361,8 +415,33 @@ public class SettingsController implements IController {
         checkProgress();
     }
 
+    private Optional<ButtonType> showDialogWindow(Alert.AlertType alertType, String title, String text) {
+        Alert alert = new Alert(alertType);
+        alert.initOwner(this.appStage);
+        alert.setTitle(title);
+        alert.setHeaderText("");
+        alert.setContentText(text);
+
+        if (alertType == Alert.AlertType.ERROR) {
+            alert.getButtonTypes().clear();
+            alert.getButtonTypes().add(ButtonType.OK);
+        }
+
+        return alert.showAndWait();
+    }
+
     @FXML
     void createListOfPlayersButtonAction(ActionEvent event) {
+        if (!input_info.getText().isEmpty()) {
+            Optional<ButtonType> option = showDialogWindow(Alert.AlertType.CONFIRMATION, "Создать список игроков", "Создать новый список?");
+
+            if (option.get() != ButtonType.OK)
+                return;
+
+            input_info.clear();
+        }
+        setDirty(true);
+
         URL locationUrl = getClass().getClassLoader().getResource("views/UserListView" + FXML);
 
         FXMLLoader loader = new FXMLLoader(locationUrl);
@@ -379,6 +458,7 @@ public class SettingsController implements IController {
         UserListController userListController = loader.<UserListController>getController();
         userListController.setPrimaryStage(stage, "Новый список игроков");
         userListController.showContent(input_info.getText(), true);
+        userListController.setDirty(true);
 
         stage.setResizable(false);
         stage.showAndWait();
@@ -408,7 +488,14 @@ public class SettingsController implements IController {
         stage.initModality(Modality.APPLICATION_MODAL);
 
         UserListController userListController = loader.<UserListController>getController();
-        userListController.showContent(input_info.getText(), false);
+
+        try {
+            userListController.showContent(input_info.getText(), false);
+        } catch (Exception e) {
+            showErrorMessageWithDefaultDelay(messageField, OutputMessages.error_invalid_players_file);
+            return;
+        }
+
 
         stage.setResizable(false);
         userListController.setPrimaryStage(stage, "Редактирование списка игроков");
@@ -437,7 +524,6 @@ public class SettingsController implements IController {
 
         checkProgress();
     }
-
 
     @FXML
     void screenResolutionAction(ActionEvent event) {
@@ -485,20 +571,21 @@ public class SettingsController implements IController {
 
         if (selectedFile != null) {
             background.setText(selectedFile.getAbsolutePath());
+            setDirty(true);
         }
         checkProgress();
     }
 
     private synchronized void playButtonEffect() {
-        double startWidth = play.getFitWidth();
-        double startHeight = play.getFitHeight();
-        double startLayoutX = play.getLayoutX();
-        double startLayoutY = play.getLayoutY();
+        double startWidth = playIcon.getFitWidth();
+        double startHeight = playIcon.getFitHeight();
+        double startLayoutX = playIcon.getLayoutX();
+        double startLayoutY = playIcon.getLayoutY();
 
-        play.setFitWidth(startWidth * 0.85);
-        play.setFitHeight(startHeight * 0.85);
-        play.setLayoutX(startLayoutX + (startWidth * 0.15)/2);
-        play.setLayoutY(startLayoutY + (startHeight * 0.15)/2);
+        playIcon.setFitWidth(startWidth * 0.85);
+        playIcon.setFitHeight(startHeight * 0.85);
+        playIcon.setLayoutX(startLayoutX + (startWidth * 0.15) / 2);
+        playIcon.setLayoutY(startLayoutY + (startHeight * 0.15) / 2);
 
         try {
             Thread.sleep(150);
@@ -506,17 +593,15 @@ public class SettingsController implements IController {
             e.printStackTrace();
         }
 
-        play.setFitWidth(startWidth);
-        play.setFitHeight(startHeight);
-        play.setLayoutX(startLayoutX);
-        play.setLayoutY(startLayoutY);
+        playIcon.setFitWidth(startWidth);
+        playIcon.setFitHeight(startHeight);
+        playIcon.setLayoutX(startLayoutX);
+        playIcon.setLayoutY(startLayoutY);
     }
 
     @FXML
     void handleLaunchButtonAction(ActionEvent event) {
-        new Thread(() -> {
-            playButtonEffect();
-        }).start();
+        new Thread(() -> playButtonEffect()).start();
 
         checkProgress();
         if (progress.getProgress() < 0.99) {
@@ -578,7 +663,7 @@ public class SettingsController implements IController {
 
         Font font = null;
         try {
-            font = loadFont(screen);
+            font = loadFont(textFont.getValue(), screen.properties.fontSize);
         } catch (Exception e) {
             messageField.setText(OutputMessages.error_load_font);
         }
@@ -686,33 +771,65 @@ public class SettingsController implements IController {
     }
 
     private void scanFonts() {
-        File folder = new File(".\\fonts");
-        File[] listOfFiles = folder.listFiles();
+        allFontsNames = new ArrayList<String>();
 
-        List<String> fonts = new ArrayList<String>();
+        File[] defaultFiles = null;
+        try {
+            defaultFiles = new File(getClass().getClassLoader().getResource("fonts/").toURI()).listFiles();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+        findFontsInDirectory(defaultFiles);
 
+        File externalFiles = new File(".\\fonts");
+        File[] listOfFiles = externalFiles.listFiles();
         if (listOfFiles != null)
-            for (File file : listOfFiles) {
-                if (file.isFile() && file.getName().contains(FileExtensions.TTF)) {
-                    String fileName = file.getName();
-                    String fontName = fileName.substring(0, fileName.lastIndexOf("."));
-                    fonts.add(fontName);
-                }
-            }
+            findFontsInDirectory(listOfFiles);
 
-        textFont.getItems().add("Default");
-        textFont.getItems().addAll(fonts);
+        loadAllFonts();
+
+        textFont.getItems().addAll(allFontsNames);
         textFont.setValue("Default");
+        textPreview.setFont(allFonts.get(textFont.getValue()));
+        textPreview.setTextFill(textColor.getValue());
     }
 
-    private Font loadFont(Screen screen) {
-        if (!textFont.getValue().equals("Default")) {
-            String url = ".//fonts//" + textFont.getValue() + ".ttf";
-            String absolutePath = java.nio.file.Paths.get(url).toFile().getAbsolutePath();
-            return Font.loadFont(Paths.FILE + absolutePath, screen.properties.fontSize);
+    private void findFontsInDirectory(File[] defaultFiles) {
+        for (File file : defaultFiles) {
+            if (file.isFile() && file.getName().endsWith(FileExtensions.TTF)) {
+                String fileName = file.getName();
+                String fontName = fileName.substring(0, fileName.lastIndexOf("."));
+                allFontsNames.add(fontName);
+            }
         }
+    }
 
-        return Font.loadFont(getClass().getClassLoader().getResourceAsStream(Paths.DEFAULT_FONT), screen.properties.fontSize);
+    @FXML
+    void updatePreviewText(ActionEvent event) {
+        textPreview.setFont(allFonts.get(textFont.getValue()));
+    }
+
+    @FXML
+    void updatePreviewTextFill(ActionEvent event) {
+        textPreview.setTextFill(textColor.getValue());
+    }
+
+    private void loadAllFonts() {
+        allFonts = new HashMap<>();
+
+        for (String fontName : allFontsNames) {
+            allFonts.put(fontName, loadFont(fontName, 20));
+        }
+    }
+
+    private Font loadFont(String fontName, double size) {
+        try {
+            return Font.loadFont(getClass().getClassLoader().getResourceAsStream(Paths.DEFAULT_FONTS + fontName + TTF), size);
+        } catch (Exception e) {
+            String url = ".//fonts//" + fontName + TTF;
+            String absolutePath = java.nio.file.Paths.get(url).toFile().getAbsolutePath();
+            return Font.loadFont(Paths.FILE + absolutePath, size);
+        }
     }
 
     private Screen getScreen() {

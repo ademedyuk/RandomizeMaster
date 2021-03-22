@@ -21,6 +21,15 @@ public enum Gender {
         return Gender.NONE;
     }
 
+    public static Gender getGenderString(String value) {
+        if (value.equals(GIRL.stringValue))
+            return Gender.GIRL;
+        if (value.equals(BOY.stringValue))
+            return Gender.BOY;
+
+        return Gender.NONE;
+    }
+
     @Override
     public String toString() {
         return this.stringValue;

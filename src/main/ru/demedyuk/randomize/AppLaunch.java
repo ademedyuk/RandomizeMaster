@@ -43,7 +43,7 @@ public class AppLaunch extends Application {
         appStage.setScene(new Scene((Pane) loader.load()));
         SettingsController settingsController = loader.<SettingsController>getController();
         settingsController.setPrimaryStage(primaryStage);
-        settingsController.initScene();
+        settingsController.initScene(this.appStage);
         addEvent();
     }
 
