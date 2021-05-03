@@ -18,7 +18,7 @@ public class Utils {
 
         IPlayer player = null;
 
-        if (state.equals(InputFileStates.FIRTSNAME)) {
+        if (state.equals(InputFileStates.NAME)) {
             player = new PlayerByFirstName();
         }
 

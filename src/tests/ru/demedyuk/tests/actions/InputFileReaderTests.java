@@ -2,7 +2,7 @@ package ru.demedyuk.tests.actions;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.demedyuk.randomize.models.files.InputFileReader;
+import ru.demedyuk.randomize.utils.file.reader.TXTInputFileReader;
 import ru.demedyuk.randomize.models.files.InputFileStates;
 
 import java.io.IOException;
@@ -11,61 +11,61 @@ public class InputFileReaderTests {
 
     @Test
     public void inputFileReader_fileNotExists() throws IOException {
-        InputFileReader inputFileReader = new InputFileReader("C://Folder/not_exists.players");
+        String path = "C://Folder/not_exists.players";
 
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            inputFileReader.validateDocument();
+            readFileAndValidate(path);
         });
 
         Assertions.assertEquals("Файл not_exists.players не существует", exception.getMessage());
     }
 
     @Test
-    public void inputFileReader_firstNameValid() throws IOException {
-        String path = getResourcePath("players/valid/firstname.players");
-        InputFileReader inputFile = validateDocument(path);
+    public void inputFileReader_NameValid() throws IOException {
+        String path = getResourcePath("players/valid/name.players");
+        TXTInputFileReader inputFile = readFileAndValidate(path);
 
-        Assertions.assertEquals(InputFileStates.FIRTSNAME, inputFile.getState());
+        Assertions.assertEquals(InputFileStates.NAME, inputFile.getState());
     }
 
     @Test
     public void inputFileReader_firstNameLastnameValid() throws IOException {
-        String path = getResourcePath("players/valid/firstnameLastname.players");
-        InputFileReader inputFile = validateDocument(path);
+        String path = getResourcePath("players/valid/nameWithLastname.players");
+        TXTInputFileReader inputFile = readFileAndValidate(path);
 
-        Assertions.assertEquals(InputFileStates.FIRTSNAME_LASTNAME, inputFile.getState());
+        Assertions.assertEquals(InputFileStates.NAME, inputFile.getState());
     }
 
     @Test
-    public void inputFileReader_numberFirstNameLastnameValid() throws IOException {
-        String path = getResourcePath("players/valid/numberFirstnameLastname.players");
-        InputFileReader inputFile = validateDocument(path);
+    public void inputFileReader_numberNameValid() throws IOException {
+        String path = getResourcePath("players/valid/numberName.players");
+        TXTInputFileReader inputFile = readFileAndValidate(path);
 
-        Assertions.assertEquals(InputFileStates.NUMBER_FIRTSNAME_LASTNAME, inputFile.getState());
+        Assertions.assertEquals(InputFileStates.NUMBER_NAME, inputFile.getState());
     }
 
     @Test
-    public void inputFileReader_firstNameLastnameGenderValid() throws IOException {
-        String path = getResourcePath("players/valid/firstnameLastnameGender.players");
-        InputFileReader inputFile = validateDocument(path);
+    public void inputFileReader_nameGenderValid() throws IOException {
+        String path = getResourcePath("players/valid/nameGender.players");
+        TXTInputFileReader inputFile = readFileAndValidate(path);
 
-        Assertions.assertEquals(InputFileStates.FIRTSNAME_LASTNAME_GENDER, inputFile.getState());
+        Assertions.assertEquals(InputFileStates.NAME_GENDER, inputFile.getState());
     }
 
     @Test
-    public void inputFileReader_numberFirstNameLastnameGenderValid() throws IOException {
-        String path = getResourcePath("players/valid/numberFirstnameLastnameGender.players");
-        InputFileReader inputFile = validateDocument(path);
+    public void inputFileReader_numberNameGenderValid() throws IOException {
+        String path = getResourcePath("players/valid/numberNameGender.players");
+        TXTInputFileReader inputFile = readFileAndValidate(path);
 
-        Assertions.assertEquals(InputFileStates.NUMBER_FIRTSNAME_LASTNAME_GENDER, inputFile.getState());
+        Assertions.assertEquals(InputFileStates.NUMBER_NAME_GENDER, inputFile.getState());
     }
 
     @Test
-    public void inputFileReader_emptyFile() throws IOException {
+    public void inputFileReader_emptyFile() {
         String path = getResourcePath("players/invalid/empty.players");
 
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            InputFileReader inputFile = validateDocument(path);
+            TXTInputFileReader inputFile = readFileAndValidate(path);
         });
 
         Assertions.assertEquals( "Файл *.players пустой", exception.getMessage());
@@ -76,10 +76,10 @@ public class InputFileReaderTests {
         String path = getResourcePath("players/invalid/wrongGender.players");
 
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            InputFileReader inputFile = validateDocument(path);
+            TXTInputFileReader inputFile = readFileAndValidate(path);
         });
 
-        Assertions.assertEquals( "Проверьте корректность файла с участниками", exception.getMessage());
+        Assertions.assertEquals("Проверьте корректность файла с участниками", exception.getMessage());
     }
 
     @Test
@@ -87,7 +87,7 @@ public class InputFileReaderTests {
         String path = getResourcePath("players/invalid/wrongNumber.players");
 
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            InputFileReader inputFile = validateDocument(path);
+            TXTInputFileReader inputFile = readFileAndValidate(path);
         });
 
         Assertions.assertEquals( "Проверьте корректность файла с участниками", exception.getMessage());
@@ -98,7 +98,7 @@ public class InputFileReaderTests {
         String path = getResourcePath("players/invalid/wrongNumberArguments_1.players");
 
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            InputFileReader inputFile = validateDocument(path);
+            TXTInputFileReader inputFile = readFileAndValidate(path);
         });
 
         Assertions.assertEquals( "Проверьте корректность файла с участниками", exception.getMessage());
@@ -107,21 +107,19 @@ public class InputFileReaderTests {
     @Test
     public void inputFileReader_wrongOrderArguments_1() throws IOException {
         String path = getResourcePath("players/invalid/wrongOrderArguments_1.players");
-        InputFileReader inputFile = validateDocument(path);
 
-        Assertions.assertEquals(InputFileStates.NOT_VALID, inputFile.getState());
+        Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            TXTInputFileReader inputFile = readFileAndValidate(path);
+        });
+
+
+
+        Assertions.assertEquals("Проверьте корректность файла с участниками", exception.getMessage());
     }
 
-    @Test
-    public void inputFileReader_wrongOrderArguments_2() throws IOException {
-        String path = getResourcePath("players/invalid/wrongOrderArguments_2.players");
-        InputFileReader inputFile = validateDocument(path);
-
-        Assertions.assertEquals( InputFileStates.NOT_VALID, inputFile.getState());
-    }
-
-    private InputFileReader validateDocument(String path) throws IOException {
-        InputFileReader inputFileReader = new InputFileReader(path);
+    private TXTInputFileReader readFileAndValidate(String path) throws IOException {
+        TXTInputFileReader inputFileReader = new TXTInputFileReader(path);
+        inputFileReader.readFile();
         inputFileReader.validateDocument();
 
         return inputFileReader;

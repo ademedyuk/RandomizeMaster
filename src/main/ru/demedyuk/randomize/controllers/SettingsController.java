@@ -1,7 +1,6 @@
 package ru.demedyuk.randomize.controllers;
 
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -15,7 +14,10 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-import javafx.stage.*;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import ru.demedyuk.randomize.AppLaunch;
 import ru.demedyuk.randomize.configuration.RuntimeSettings;
 import ru.demedyuk.randomize.configuration.properties.ActionProperties;
@@ -28,12 +30,13 @@ import ru.demedyuk.randomize.messages.About;
 import ru.demedyuk.randomize.messages.OutputMessages;
 import ru.demedyuk.randomize.messages.Tooltips;
 import ru.demedyuk.randomize.messages.WindowTitles;
-import ru.demedyuk.randomize.models.files.InputFileReader;
-import ru.demedyuk.randomize.utils.FileUtils;
+import ru.demedyuk.randomize.utils.file.reader.IInputFileReader;
+import ru.demedyuk.randomize.utils.file.reader.TXTInputFileReader;
+import ru.demedyuk.randomize.utils.file.reader.XLSXInputFileReader;
+import ru.demedyuk.randomize.utils.file.FileUtils;
 import ru.demedyuk.randomize.utils.actions.RandomizeAction;
 
 import java.io.*;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 
@@ -43,7 +46,7 @@ import static ru.demedyuk.randomize.constants.PaintColors.GRAY;
 import static ru.demedyuk.randomize.constants.Paths.DEFAULT_PROPERTIES;
 import static ru.demedyuk.randomize.constants.Paths.PREVIEW_VIEW;
 import static ru.demedyuk.randomize.messages.WindowTitles.main_title;
-import static ru.demedyuk.randomize.utils.FileUtils.makeDirsIfNotExists;
+import static ru.demedyuk.randomize.utils.file.FileUtils.makeDirsIfNotExists;
 import static ru.demedyuk.randomize.utils.actions.OutputMessageActions.showErrorMessageWithDefaultDelay;
 
 public class SettingsController implements IController {
@@ -403,7 +406,7 @@ public class SettingsController implements IController {
         fileChooser.setInitialDirectory(FileUtils.findInitialDirectory(input_info.getText(), "\\players\\"));
         fileChooser.setTitle(WindowTitles.selected_list_oj_players_title);
         fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Участники", ALL_PREFIX + PLAYERS),
+                new FileChooser.ExtensionFilter("Участники", ALL_PREFIX + PLAYERS, ALL_PREFIX + XLSX, ALL_PREFIX + CSV),
                 new FileChooser.ExtensionFilter("Текстовые файлы", ALL_PREFIX + TXT),
                 new FileChooser.ExtensionFilter("Все", ALL_FILES));
         File selectedFile = fileChooser.showOpenDialog(null);
@@ -458,7 +461,7 @@ public class SettingsController implements IController {
 
         UserListController userListController = loader.<UserListController>getController();
         userListController.setPrimaryStage(stage, "Новый список игроков");
-        userListController.showContent(input_info.getText(), true);
+        userListController.showEmptyContent();
         userListController.setDirty(true);
 
         stage.setResizable(false);
@@ -485,18 +488,15 @@ public class SettingsController implements IController {
             e.printStackTrace();
             return;
         }
-
         stage.initModality(Modality.APPLICATION_MODAL);
 
         UserListController userListController = loader.<UserListController>getController();
-
         try {
-            userListController.showContent(input_info.getText(), false);
+            userListController.showExistingContent(initPlayers());
         } catch (Exception e) {
             showErrorMessageWithDefaultDelay(messageField, OutputMessages.error_invalid_players_file);
             return;
         }
-
 
         stage.setResizable(false);
         userListController.setPrimaryStage(stage, "Редактирование списка игроков");
@@ -513,9 +513,10 @@ public class SettingsController implements IController {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialDirectory(FileUtils.findInitialDirectory(ouput_info.getText(), "\\results\\"));
         fileChooser.setTitle(WindowTitles.folder_results_title);
-        fileChooser.setInitialFileName("result" + FileExtensions.DOCX);
+        fileChooser.setInitialFileName("result");
         fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("results", ALL_PREFIX + DOCX),
+                new FileChooser.ExtensionFilter(ALL_PREFIX + CSV, ALL_PREFIX + CSV),
+                new FileChooser.ExtensionFilter(ALL_PREFIX + DOCX, ALL_PREFIX + DOCX),
                 new FileChooser.ExtensionFilter("Все", ALL_FILES));
 
         File selectedFile = fileChooser.showSaveDialog(null);
@@ -618,10 +619,9 @@ public class SettingsController implements IController {
         currentProps = this.props;
         updateProps(currentProps);
 
-        InputFileReader playersFile = new InputFileReader(input_info.getText());
-
+        IInputFileReader inputFileReader = null;
         try {
-            playersFile.validateDocument();
+            inputFileReader = initPlayers();
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
             messageField.setText(e.getMessage());
@@ -638,7 +638,7 @@ public class SettingsController implements IController {
         RandomizeAction randomizeAction = null;
         try {
             randomizeAction = new RandomizeAction(
-                    playersFile.getAllPlayers(),
+                    inputFileReader.getAllPlayers(),
                     teamSize,
                     isBalansing.isSelected());
         } catch (IllegalArgumentException e) {
@@ -681,7 +681,7 @@ public class SettingsController implements IController {
         previewController.setTextSettings(textColor.getValue(), font);
         previewController.setTeamTitle(teamTitle.getText());
         previewController.setPathToPhoto(usePrivatePhoto.isSelected(), path_to_photo.getText());
-        previewController.setState(playersFile.getState());
+        previewController.setState(inputFileReader.getState());
         previewController.setTeams(randomizeAction.getResult());
         previewController.configureViewVisibleElements(appStage, new Image(Paths.FILE + background.getText()));
 
@@ -690,6 +690,30 @@ public class SettingsController implements IController {
         previewController.setFullScreenIfNeeded(fullScrene.isSelected());
 
         updateScene(appStage);
+    }
+
+    public IInputFileReader initPlayers() {
+        IInputFileReader inputFileReader = null;
+
+        String inputFilePath = input_info.getText();
+
+        if (inputFilePath.indexOf(".players") != -1) {
+            inputFileReader = new TXTInputFileReader(inputFilePath);
+        }
+
+        if (inputFilePath.indexOf(".xlsx") != -1) {
+            inputFileReader = new XLSXInputFileReader(inputFilePath);
+        }
+
+        try {
+            inputFileReader.readFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        inputFileReader.validateDocument();
+
+        return inputFileReader;
     }
 
     public void setPrimaryStage(Stage primaryStage) {

@@ -8,11 +8,13 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.PixelReader;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
@@ -43,6 +45,7 @@ public class PreviewController implements IController {
     private static final String GIRL = "girl";
     private static final String BOY_PNG = BOY + FileExtensions.PNG;
     private static final String GIRL_PNG = GIRL + FileExtensions.PNG;
+    private static final String NO_GENDER = "no_gender" + FileExtensions.PNG;
 
     private Stage appStage;
     private ScreenProperties screenResolutionProperties;
@@ -137,6 +140,8 @@ public class PreviewController implements IController {
     private ImageView[] photos;
 
     private int currentPageIndex = 0;
+    private int currentItemIndex = 0;
+
     private InputFileStates state;
     private Font font;
 
@@ -163,11 +168,13 @@ public class PreviewController implements IController {
     void handleNextButtonAction(ActionEvent event) {
         if (currentPageIndex + 1 > teamsCount)
             return;
-
-        currentPageIndex++;
         if (event != null)
             new Thread(() -> playButtonEffect(nextIcon)).start();
+
+        currentPageIndex++;
+
         showNewList();
+        //showNewListItem();
     }
 
     private void showNewList() {
@@ -177,16 +184,17 @@ public class PreviewController implements IController {
         for (Player player : finalTeams.get(currentPageIndex - 1)) {
             showNames(player, index);
             if (this.usePhoto) {
+                Image image = resizeImage(getPhoto(player));
 
-
-                Image image = getPhoto(player);
-                Circle circle = new Circle(60);
-                circle.setCenterX(60);
-                circle.setCenterY(60);
-                circle.setFill(new ImagePattern(image, 0, 0, 120, 120, false));
+                double rad = photos[index].getFitHeight() / 2;
+                Circle circle = new Circle(rad);
+                circle.setCenterX(rad);
+                circle.setCenterY(rad);
+                circle.setFill(new ImagePattern(image, 0, 0, rad * 2, rad * 2, false));
 
                 photos[index].setStyle("border-radius: 10px;");
-                photos[index].setImage(getPhoto(player));
+                photos[index].setImage(image);
+                photos[index].setClip(circle);
             }
             imageView.setPreserveRatio(true);
 
@@ -197,28 +205,60 @@ public class PreviewController implements IController {
         setVisibleTablaOfPlayers(finalTeams.get(currentPageIndex - 1).size(), true);
     }
 
+    private Image resizeImage(Image image) {
+        PixelReader pixelReader = image.getPixelReader();
+
+        double height = image.getHeight();
+        double width = image.getWidth();
+
+        if (height > width)
+            return new WritableImage(pixelReader, 0, 0, (int) width, (int) width);
+
+        if (height < width)
+            return new WritableImage(pixelReader, 0, 0, (int) height, (int) height);
+
+        return image;
+    }
+
+    private void showNewListItem() {
+        if (currentItemIndex >= finalTeams.get(currentPageIndex).size()) {
+            currentPageIndex++;
+            currentItemIndex = 0;
+            cleanTable();
+        }
+
+        Player player = finalTeams.get(currentPageIndex).get(currentItemIndex);
+        showNames(player, currentItemIndex);
+        if (this.usePhoto) {
+            Image image = getPhoto(player);
+            Circle circle = new Circle(photo1.getFitWidth());
+            //circle.setCenterX(60);
+            //circle.setCenterY(60);
+            circle.setFill(new ImagePattern(image, 0, 0, 120, 120, false));
+
+            photos[currentItemIndex].setStyle("border-radius: 10px;");
+            photos[currentItemIndex].setImage(image);
+            photos[currentItemIndex].setClip(circle);
+
+        }
+        imageView.setPreserveRatio(true);
+
+        currentItemIndex++;
+
+        teamLabel.setText(this.teamTitle + " " + currentPageIndex);
+        setVisibleTablaOfPlayers(currentItemIndex + 1, true);
+    }
+
     private void showNames(Player player, int index) {
-        if (this.state.equals(InputFileStates.FIRTSNAME)) {
-            names[index].setText(player.firstName);
+        if (this.state.equals(InputFileStates.NUMBER_NAME)
+                || this.state.equals(InputFileStates.NUMBER_NAME_GENDER)
+                || this.state.equals(InputFileStates.NUMBER_NAME_AGE)
+                || this.state.equals(InputFileStates.NUMBER_NAME_GENDER_AGE)) {
+            names[index].setText(player.number + " " + player.name);
             return;
         }
-
-        if (this.state.equals(InputFileStates.FIRTSNAME_LASTNAME)
-                || this.state.equals(InputFileStates.FIRTSNAME_LASTNAME_GENDER)) {
-            names[index].setText(player.firstName + " " + player.lastName);
-            return;
-        }
-
-        if (this.state.equals(InputFileStates.NUMBER_FIRTSNAME_LASTNAME)
-                || this.state.equals(InputFileStates.NUMBER_FIRTSNAME_LASTNAME_GENDER)) {
-            names[index].setText(player.number + " " + player.firstName + " " + player.lastName);
-            return;
-        }
-
-        if (this.state.equals(InputFileStates.NUMBER_FIRTSNAME)) {
-            names[index].setText(player.number + " " + player.firstName);
-            return;
-        }
+        else
+            names[index].setText(player.name);
     }
 
     private void cleanTable() {
@@ -449,7 +489,10 @@ public class PreviewController implements IController {
 
     private Image getPhoto(Player player) {
 
-        String urlPhotoByName = photoExists(pathToPhoto + "//" + player.firstName + " " + player.lastName);
+        if (!player.genderIsExists())
+            return new Image(getClass().getClassLoader().getResourceAsStream(IMAGES + NO_GENDER));
+
+        String urlPhotoByName = photoExists(pathToPhoto + "//" + player.name);
         String urlPhotoByNum = photoExists(pathToPhoto + "//" + player.number);
         String urlCustomPhoto = pathToPhoto + "//";
 
@@ -465,11 +508,11 @@ public class PreviewController implements IController {
 
         else if (!photoExists(urlCustomPhoto + BOY).equals("")
                 || !photoExists(urlCustomPhoto + GIRL).equals(""))
-            return player.gender.equals(Gender.BOY) ?
+            return player.genderIsExists() && player.gender.equals(Gender.BOY) ?
                     new Image(Paths.FILE + photoExists(urlCustomPhoto + BOY))
                     : new Image(Paths.FILE + photoExists(urlCustomPhoto + GIRL));
         else
-            return player.gender.equals(Gender.BOY) ?
+            return player.genderIsExists() && player.gender.equals(Gender.BOY) ?
                     new Image(getClass().getClassLoader().getResourceAsStream(IMAGES + BOY_PNG))
                     : new Image(getClass().getClassLoader().getResourceAsStream(IMAGES + GIRL_PNG));
     }

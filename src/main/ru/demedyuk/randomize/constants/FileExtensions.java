@@ -13,6 +13,9 @@ public class FileExtensions {
     public static final String ALL_FILES = "*.*";
     public static final String ALL_PREFIX = "*";
 
+    public static final String XLSX = ".xlsx";
+    public static final String CSV = ".csv";
+
     public static final String PLAYERS = ".players";
     public static final String CONFIG = ".config";
 }

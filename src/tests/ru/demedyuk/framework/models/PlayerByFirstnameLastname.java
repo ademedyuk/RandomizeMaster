@@ -7,6 +7,6 @@ public class PlayerByFirstnameLastname implements IPlayer {
 
     @Override
     public Player generate() {
-        return new Player(Data.getRandomPlayerName(), Data.getRandomPlayerName());
+        return new Player(Data.getRandomPlayerName());
     }
 }

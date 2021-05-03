@@ -18,7 +18,10 @@ public class TableBean extends Player {
     public ComboBox<String> genderOption = new ComboBox<>(options);
 
     public TableBean(Player player) {
-        super(player.number, player.firstName, player.lastName, player.gender);
+        super(player.name);
+        this.number = player.number;
+        this.gender = player.gender;
+        this.age = player.age;
 
         genderOption.setValue(player.gender.toString());
     }
@@ -34,24 +37,30 @@ public class TableBean extends Player {
     }
 
     public String getNumberString() {
-        return String.valueOf(this.number);
+        return this.number;
     }
 
     public void setNumberString(String value) {
         this.setNumber(value);
     }
 
+    public String getAgeString() {
+        return String.valueOf(this.age);
+    }
+
     public ComboBox<String> getGenderOption() {
         return genderOption;
     }
 
-    public String getFirstName() {
-        return this.firstName;
+    public void setGenderOption(ComboBox<String> genderOption) {
+        this.setGender(Gender.getGenderString(genderOption.getValue()));
+        this.genderOption = genderOption;
     }
 
-    public String getLastName() {
-        return this.lastName;
+    public String getName() {
+        return this.name;
     }
+
 
 //    public void setNumber(int number) {
 //        this.player.setNumber(number);
@@ -65,8 +74,4 @@ public class TableBean extends Player {
 //        this.player.setLastName(lastName);
 //    }
 
-    public void setGenderOption(ComboBox<String> genderOption) {
-        this.setGender(Gender.getGenderString(genderOption.getValue()));
-        this.genderOption = genderOption;
-    }
 }

@@ -19,10 +19,10 @@ import javafx.util.StringConverter;
 import ru.demedyuk.randomize.models.Gender;
 import ru.demedyuk.randomize.models.Player;
 import ru.demedyuk.randomize.models.TableBean;
-import ru.demedyuk.randomize.models.files.InputFileReader;
-import ru.demedyuk.randomize.models.files.InputFileStates;
-import ru.demedyuk.randomize.models.files.InputFileWriter;
-import ru.demedyuk.randomize.utils.FileUtils;
+import ru.demedyuk.randomize.models.files.*;
+import ru.demedyuk.randomize.utils.file.FileUtils;
+import ru.demedyuk.randomize.utils.file.reader.IInputFileReader;
+import ru.demedyuk.randomize.utils.file.writer.InputFileWriter;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +36,7 @@ public class UserListController {
     private Stage appStage;
     private String inputFilePath;
     private boolean isDirty = false;
+    private boolean isNew = false;
 
     @FXML
     private TableView<TableBean> table;
@@ -44,13 +45,13 @@ public class UserListController {
     private TableColumn<TableBean, String> numberColumn;
 
     @FXML
-    private TableColumn<TableBean, String> firstNameColumn;
-
-    @FXML
-    private TableColumn<TableBean, String> lastNameColumn;
+    private TableColumn<TableBean, String> nameColumn;
 
     @FXML
     private TableColumn<TableBean, ComboBox> genderColumn;
+
+    @FXML
+    private TableColumn<TableBean, String> ageColumn;
 
     @FXML
     private Button addItemButton;
@@ -91,17 +92,23 @@ public class UserListController {
     @FXML
     private Text errorText;
 
-    public void showContent(String path, boolean isNew) {
-        saveButton.setDisable(true);
-        this.inputFilePath = path;
+    public void showEmptyContent() {
+        initEmptyData();
 
-        if (isNew)
-            initEmptyData();
-        else
-            initData();
+        showContent();
+    }
 
-        errorText.setVisible(false);
+    public void showExistingContent(IInputFileReader iInputFileReader) {
+        this.inputFilePath = iInputFileReader.getInputPath();
         pathToPlayersField.setText(this.inputFilePath);
+        playersData.addAll(TableBean.getListTableBean(iInputFileReader.getAllPlayers()));
+
+        showContent();
+    }
+
+    private void showContent() {
+        saveButton.setDisable(true);
+        errorText.setVisible(false);
 
         table.setEditable(true);
         table.setItems(playersData);
@@ -130,8 +137,7 @@ public class UserListController {
                 if (!newValue.isEmpty()) {
                     try {
                         Integer.parseInt(newValue);
-                    }
-                    catch (NumberFormatException e) {
+                    } catch (NumberFormatException e) {
                         return;
                     }
                 }
@@ -147,16 +153,16 @@ public class UserListController {
         });
         numberColumn.setResizable(false);
 
-        firstNameColumn.setCellValueFactory(new PropertyValueFactory<TableBean, String>("firstName"));
-        firstNameColumn.setCellFactory(TextFieldTableCell.forTableColumn(stringConverter));
-        firstNameColumn.setEditable(true);
-        firstNameColumn.setOnEditCommit(new EventHandler<CellEditEvent<TableBean, String>>() {
+        nameColumn.setCellValueFactory(new PropertyValueFactory<TableBean, String>("name"));
+        nameColumn.setCellFactory(TextFieldTableCell.forTableColumn(stringConverter));
+        nameColumn.setEditable(true);
+        nameColumn.setOnEditCommit(new EventHandler<CellEditEvent<TableBean, String>>() {
             @Override
             public void handle(CellEditEvent<TableBean, String> cell) {
                 TableBean player = cell.getTableView().getItems().get(cell.getTablePosition().getRow());
                 playersData.forEach(foo -> {
                     if (foo.equals(player)) {
-                        foo.setFirstName(cell.getNewValue());
+                        foo.setName(cell.getNewValue());
                         calculate();
                         setDirty(true);
                     }
@@ -164,22 +170,6 @@ public class UserListController {
             }
         });
 
-        lastNameColumn.setCellValueFactory(new PropertyValueFactory<TableBean, String>("lastName"));
-        lastNameColumn.setCellFactory(TextFieldTableCell.forTableColumn(stringConverter));
-        lastNameColumn.setEditable(true);
-        lastNameColumn.setOnEditCommit(new EventHandler<CellEditEvent<TableBean, String>>() {
-            @Override
-            public void handle(CellEditEvent<TableBean, String> cell) {
-                TableBean player = cell.getTableView().getItems().get(cell.getTablePosition().getRow());
-                playersData.forEach(foo -> {
-                    if (foo.equals(player)) {
-                        foo.setLastName(cell.getNewValue());
-                        setDirty(true);
-                    }
-                    calculate();
-                });
-            }
-        });
         genderColumn.setCellValueFactory(new PropertyValueFactory<TableBean, ComboBox>("genderOption"));
         EventHandler<ActionEvent> eventHandler = (event) -> {
             updateGender();
@@ -187,12 +177,38 @@ public class UserListController {
             setDirty(true);
         };
 
+        ageColumn.setCellValueFactory(new PropertyValueFactory<TableBean, String>("ageString"));
+        ageColumn.setCellFactory(TextFieldTableCell.forTableColumn(stringConverter));
+        ageColumn.setEditable(true);
+        ageColumn.setOnEditCommit(new EventHandler<CellEditEvent<TableBean, String>>() {
+            @Override
+            public void handle(CellEditEvent<TableBean, String> cell) {
+                String newValue = cell.getNewValue();
+
+                if (!newValue.isEmpty()) {
+                    try {
+                        Integer.parseInt(newValue);
+                    } catch (NumberFormatException e) {
+                        return;
+                    }
+                }
+
+                TableBean player = cell.getTableView().getItems().get(cell.getTablePosition().getRow());
+                playersData.forEach(foo -> {
+                    if (foo.equals(player)) {
+                        foo.setAge(newValue);
+                        setDirty(true);
+                    }
+                });
+            }
+        });
+        ageColumn.setResizable(false);
+
         playersData.forEach(x -> x.genderOption.setOnAction(eventHandler));
         table.getVisibleLeafColumns().forEach(column -> column.setStyle("-fx-alignment: CENTER;"));
 
         table.getColumns().get(0).setContextMenu(createContextMenu("number"));
-        table.getColumns().get(2).setContextMenu(createContextMenu("lastName"));
-        table.getColumns().get(3).setContextMenu(createContextMenu("gender"));
+        table.getColumns().get(2).setContextMenu(createContextMenu("gender"));
 
         calculate();
         sortTable();
@@ -208,21 +224,36 @@ public class UserListController {
             setDirty(true);
         });
 
+        MenuItem visibleItem = new MenuItem();
+        visibleItem.setText("Скрыть");
+        visibleItem.setUserData(userData);
+
+        visibleItem.setOnAction((event) -> {
+            setVisible(false, (String) visibleItem.getUserData());
+            cleanColumn(event);
+            setDirty(true);
+        });
+
         ContextMenu contextMenu = new ContextMenu();
-        contextMenu.getItems().add(menuItem);
+        contextMenu.getItems().addAll(menuItem, visibleItem);
 
         return contextMenu;
+    }
+
+    private void setVisible(boolean value, String userData) {
+        switch (userData) {
+            case "number":
+                numberColumn.setVisible(value);
+                break;
+            case "gender":
+                genderColumn.setVisible(value);
+                break;
+        }
     }
 
     private void cleanColumn(ActionEvent actionEvent) {
         if (((MenuItem) actionEvent.getSource()).getUserData() == "number") {
             table.getColumns().get(0).getTableView().getItems().forEach(x -> x.setNumber(""));
-
-            playersData.set(0, playersData.get(0));
-        }
-
-        if (((MenuItem) actionEvent.getSource()).getUserData() == "lastName") {
-            table.getColumns().get(0).getTableView().getItems().forEach(x -> x.setLastName(""));
 
             playersData.set(0, playersData.get(0));
         }
@@ -238,7 +269,7 @@ public class UserListController {
         if (!numberColumn.getText().equals(""))
             table.getSortOrder().addAll(numberColumn);
         else
-            table.getSortOrder().addAll(firstNameColumn);
+            table.getSortOrder().addAll(nameColumn);
     }
 
     public void setPrimaryStage(Stage primaryStage, String title) {
@@ -273,24 +304,23 @@ public class UserListController {
         setDirty(true);
     }
 
-    private void addPlayer(int index, String firstName, String lastName) {
+    private void addPlayer(int index, String name) {
         if (playersData.isEmpty() || !playersData.isEmpty() && playersData.get(0).number.isEmpty()) {
-            playersData.add(index, new TableBean(new Player(firstName, lastName, Gender.NONE.toString())));
+            playersData.add(index, new TableBean(new Player(name).addGender(Gender.NONE)));
             return;
         }
 
-        playersData.add(index, new TableBean(new Player(playersData.get(index - 1).getNumber() + 1, firstName, lastName, Gender.NONE)));
+        playersData.add(index, new TableBean(new Player(name).addNumber(playersData.get(index - 1).getNumber() + 1).addGender(Gender.NONE)));
 
     }
 
     private void addNewPlayer(int index) {
-        addPlayer(index, "", "");
+        addPlayer(index, "");
     }
 
     private void addDefaultPlayer(int index) {
-        addPlayer(index, "Имя", "Фамилия");
+        addPlayer(index, "Имя");
     }
-
 
     @FXML
     void deleteItemButtonHandler(ActionEvent event) {
@@ -383,20 +413,9 @@ public class UserListController {
         return inputFilePath;
     }
 
-    private void initData() {
-        InputFileReader inputFileReader = new InputFileReader(inputFilePath);
-        try {
-            inputFileReader.validateDocument();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        playersData.addAll(TableBean.getListTableBean(inputFileReader.getAllPlayers()));
-    }
-
     private void initEmptyData() {
         pathToPlayersField.clear();
-        playersData.add(new TableBean(new Player(1, "Имя", "Фамилия")));
+        playersData.add(new TableBean(new Player("Имя").addNumber("1")));
     }
 
     private Optional<ButtonType> showDialogWindow(Alert.AlertType alertType, String title, String text) {
@@ -427,15 +446,26 @@ public class UserListController {
         setDirty(false);
 
         InputFileWriter inputFileWriter = new InputFileWriter(inputFilePath, playersData);
-        inputFileWriter.write();
 
+        try {
+            if (inputFilePath.indexOf(".players") != -1)
+                inputFileWriter.writeToTxt();
+
+            if (inputFilePath.indexOf(".xlsx") != -1)
+                inputFileWriter.writeToCsv();
+        } catch (IOException e) {
+            setMessage("Ошибка записи в файл");
+            return false;
+        }
+
+        setMessage("Файл успешно сохранен");
         return true;
     }
 
     private boolean isValidTable(ObservableList<TableBean> playersData) {
         Player etalonPlayer = playersData.get(0);
-
         InputFileStates etalonState = etalonPlayer.executeState();
+
         if (etalonState == InputFileStates.NOT_VALID) {
             showDialogWindow(Alert.AlertType.ERROR, "Ошибка", "Количество параметров в каждой строке должно быть одинаковым");
             return false;
@@ -450,14 +480,12 @@ public class UserListController {
 
                 if (!player.number.isEmpty())
                     errorPlayer += " " + player.number;
-                if (!player.firstName.isEmpty())
-                    errorPlayer += " " + player.firstName;
-                if (!player.lastName.isEmpty())
-                    errorPlayer += " " + player.lastName;
+                if (!player.name.isEmpty())
+                    errorPlayer += " " + player.name;
                 if (!errorPlayer.isEmpty()) {
-                    errorMessage = "Ошибка в строке: '" + errorPlayer.trim() +  "'";
+                    errorMessage = "Ошибка в строке: '" + errorPlayer.trim() + "'";
                 } else
-                errorMessage = "Ошибка в строке '" + i + "'";
+                    errorMessage = "Ошибка в строке '" + i + "'";
 
                 showDialogWindow(Alert.AlertType.ERROR, "Ошибка", "Количество параметров в каждой строке должно быть одинаковым. " + errorMessage);
                 setMessage(errorMessage);
@@ -535,8 +563,7 @@ public class UserListController {
                 double k = (newValue.doubleValue() - oldValue.doubleValue()) / 4;
 
                 numberColumn.setPrefWidth(numberColumn.getWidth() + k);
-                firstNameColumn.setPrefWidth(firstNameColumn.getWidth() + k);
-                lastNameColumn.setPrefWidth(lastNameColumn.getWidth() + k);
+                nameColumn.setPrefWidth(nameColumn.getWidth() + k);
                 genderColumn.setPrefWidth(genderColumn.getWidth() + k);
             }
         });

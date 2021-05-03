@@ -1,4 +1,4 @@
-package ru.demedyuk.randomize.utils;
+package ru.demedyuk.randomize.utils.file;
 
 import java.io.File;
 import java.io.IOException;

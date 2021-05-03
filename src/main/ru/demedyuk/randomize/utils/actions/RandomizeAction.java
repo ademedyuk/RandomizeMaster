@@ -3,7 +3,9 @@ package ru.demedyuk.randomize.utils.actions;
 import ru.demedyuk.randomize.constants.FileExtensions;
 import ru.demedyuk.randomize.models.Gender;
 import ru.demedyuk.randomize.models.Player;
-import ru.demedyuk.randomize.utils.DocxGenerate;
+import ru.demedyuk.randomize.utils.file.writer.CsvGenerate;
+import ru.demedyuk.randomize.utils.file.writer.DocxGenerate;
+import ru.demedyuk.randomize.utils.file.writer.IResultFileGenerate;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -137,12 +139,20 @@ public class RandomizeAction {
         if (finalTeams.size() == 0)
             return;
 
-        DocxGenerate docxGenerate = new DocxGenerate(resultsFilePath.replace(FileExtensions.DOCX, ""));
+        IResultFileGenerate fileGenerate = null;
 
-        for (int i = 1; i <= finalTeams.size(); i++) {
-            docxGenerate.addOneTeamInfo(teamLabel + " " + i, finalTeams.get(i - 1));
+        if (resultsFilePath.endsWith(FileExtensions.DOCX)) {
+            fileGenerate = new DocxGenerate(resultsFilePath, teamLabel, finalTeams);
         }
 
-        docxGenerate.generate();
+        if (resultsFilePath.endsWith(FileExtensions.CSV)) {
+            fileGenerate = new CsvGenerate(resultsFilePath, teamLabel, finalTeams);
+        }
+
+        try {
+            fileGenerate.generate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
