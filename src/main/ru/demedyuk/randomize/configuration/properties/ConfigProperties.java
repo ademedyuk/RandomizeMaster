@@ -5,7 +5,7 @@ public enum ConfigProperties {
     PLAYERS_FILE("players.file.path"),
     RESULT_FILE("result.file.path"),
     TEAM_SIZE("teamSize.value"),
-    USE_BALANSE("useBalanse.value"),
+    ADDITIONAL_OPTIONS("additional.options.value"),
     USE_PHOTO("usePhoto.value"),
     PHOTO_DIRECTORY_FILE("photo.directory.path"),
 

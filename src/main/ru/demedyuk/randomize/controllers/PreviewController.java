@@ -151,17 +151,22 @@ public class PreviewController implements IController {
         startIcon.setVisible(false);
 
         setVisibleNavigateButtons(true);
-        handleNextButtonAction(null);
+        //handleNextButtonAction(null);
+
+        teamLabel.setText(this.teamTitle + " " + (currentPageIndex + 1));
+        teamLabel.setVisible(true);
     }
 
     @FXML
     void handlePreviousButtonAction(ActionEvent event) {
-        if (currentPageIndex - 1 <= 0)
+        if (currentPageIndex - 1 < 0 && currentItemIndex == 0)
             return;
 
-        currentPageIndex--;
+        //currentPageIndex--;
         new Thread(() -> playButtonEffect(previousIcon)).start();
-        showNewList();
+        //showNewList();
+
+        showPreviousListItem();
     }
 
     @FXML
@@ -171,17 +176,18 @@ public class PreviewController implements IController {
         if (event != null)
             new Thread(() -> playButtonEffect(nextIcon)).start();
 
-        currentPageIndex++;
+        //currentPageIndex++;
+        //showNewList();
 
-        showNewList();
-        //showNewListItem();
+        showNewListItem();
     }
 
     private void showNewList() {
         cleanTable();
 
         int index = 0;
-        for (Player player : finalTeams.get(currentPageIndex - 1)) {
+        //for (Player player : finalTeams.get(currentPageIndex - 1)) {
+        for (Player player : finalTeams.get(currentPageIndex)) {
             showNames(player, index);
             if (this.usePhoto) {
                 Image image = resizeImage(getPhoto(player));
@@ -201,8 +207,9 @@ public class PreviewController implements IController {
             index++;
         }
 
-        teamLabel.setText(this.teamTitle + " " + currentPageIndex);
-        setVisibleTablaOfPlayers(finalTeams.get(currentPageIndex - 1).size(), true);
+        teamLabel.setText(this.teamTitle + " " + (currentPageIndex + 1));
+        setVisibleTablaOfPlayers(finalTeams.get(currentPageIndex).size(), true);
+        //setVisibleTablaOfPlayers(finalTeams.get(currentPageIndex).size() - 1, true);
     }
 
     private Image resizeImage(Image image) {
@@ -221,20 +228,29 @@ public class PreviewController implements IController {
     }
 
     private void showNewListItem() {
+        if (currentPageIndex >= finalTeams.size())
+            return;
+
         if (currentItemIndex >= finalTeams.get(currentPageIndex).size()) {
-            currentPageIndex++;
-            currentItemIndex = 0;
-            cleanTable();
+
+            if (currentPageIndex + 1 < finalTeams.size()) {
+                currentPageIndex++;
+                currentItemIndex = 0;
+                cleanTable();
+                teamLabel.setText(this.teamTitle + " " + (currentPageIndex + 1));
+            }
+            return;
         }
 
         Player player = finalTeams.get(currentPageIndex).get(currentItemIndex);
         showNames(player, currentItemIndex);
         if (this.usePhoto) {
             Image image = getPhoto(player);
-            Circle circle = new Circle(photo1.getFitWidth());
-            //circle.setCenterX(60);
-            //circle.setCenterY(60);
-            circle.setFill(new ImagePattern(image, 0, 0, 120, 120, false));
+            double rad = photos[currentItemIndex].getFitHeight() / 2;
+            Circle circle = new Circle(rad);
+            circle.setCenterX(rad);
+            circle.setCenterY(rad);
+            circle.setFill(new ImagePattern(image, 0, 0, rad * 2, rad * 2, false));
 
             photos[currentItemIndex].setStyle("border-radius: 10px;");
             photos[currentItemIndex].setImage(image);
@@ -243,10 +259,25 @@ public class PreviewController implements IController {
         }
         imageView.setPreserveRatio(true);
 
-        currentItemIndex++;
+        setVisibleOnePlayer(currentItemIndex, true);
 
-        teamLabel.setText(this.teamTitle + " " + currentPageIndex);
-        setVisibleTablaOfPlayers(currentItemIndex + 1, true);
+        currentItemIndex++;
+    }
+
+    private void showPreviousListItem() {
+        if (currentPageIndex < 0)
+            return;
+
+        if (currentItemIndex <= 0) {
+            currentItemIndex = finalTeams.get(currentPageIndex).size();
+
+            currentPageIndex--;
+            showNewList();
+            return;
+        }
+
+        setVisibleOnePlayer(currentItemIndex - 1, false);
+        currentItemIndex--;
     }
 
     private void showNames(Player player, int index) {
@@ -256,8 +287,7 @@ public class PreviewController implements IController {
                 || this.state.equals(InputFileStates.NUMBER_NAME_GENDER_AGE)) {
             names[index].setText(player.number + " " + player.name);
             return;
-        }
-        else
+        } else
             names[index].setText(player.name);
     }
 
@@ -274,6 +304,11 @@ public class PreviewController implements IController {
             names[i].setVisible(value);
             photos[i].setVisible(value);
         }
+    }
+
+    public void setVisibleOnePlayer(int index, boolean value) {
+        names[index].setVisible(value);
+        photos[index].setVisible(value);
     }
 
     public void setVisibleNavigateButtons(boolean value) {
@@ -539,6 +574,10 @@ public class PreviewController implements IController {
             if (restartHotKey.match(event)) {
                 SettingsController settingsController = initNextView(new ActionEvent(), getNextViewName());
                 settingsController.initScene(this.appStage);
+
+                this.finalTeams.clear();
+                currentPageIndex = 0;
+                currentItemIndex = 0;
 
                 appStage.setWidth(RuntimeSettings.SETTING_VIEW_LAST_WIDTH);
                 appStage.setHeight(RuntimeSettings.SETTING_VIEW_LAST_HEIGHT);

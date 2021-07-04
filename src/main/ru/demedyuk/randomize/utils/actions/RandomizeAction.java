@@ -2,6 +2,7 @@ package ru.demedyuk.randomize.utils.actions;
 
 import ru.demedyuk.randomize.constants.FileExtensions;
 import ru.demedyuk.randomize.models.Gender;
+import ru.demedyuk.randomize.models.GenderGroup;
 import ru.demedyuk.randomize.models.Player;
 import ru.demedyuk.randomize.utils.file.writer.CsvGenerate;
 import ru.demedyuk.randomize.utils.file.writer.DocxGenerate;
@@ -27,20 +28,35 @@ public class RandomizeAction {
     //готовые команды
     private HashMap<Integer, List<Player>> finalTeams = new HashMap<>();
 
-    public RandomizeAction(List<Player> allPlayers, int teamSize, boolean needBalance) {
+    private HashMap<Integer, GenderGroup> genderGroups = new HashMap<>();
+
+    private HashMap<Integer, List<Player>> playersByAgeGroup = new HashMap<>();
+
+    public RandomizeAction(List<Player> allPlayers, int teamSize, HashMap<Integer, GenderGroup> genderGroups, RandomizeOptions randomizeOptions) {
         if (teamSize >= allPlayers.size())
             throw new IllegalArgumentException("Общее количество игроков должно превышать выбранный размер команды");
 
         this.allPlayers = allPlayers;
         this.teamSize = teamSize;
+        this.genderGroups = genderGroups;
 
-        if (needBalance) {
-            initPlayersBySex();
-            calculateTeams();
-            doRandomByGender();
-        } else {
-            calculateTeams();
-            doRandom();
+        switch (randomizeOptions) {
+            case NONE:
+                calculateTeams();
+                doRandom();
+                break;
+
+            case BY_GENDER:
+                initPlayersBySex();
+                calculateTeams();
+                doRandomByGender();
+                break;
+
+            case BY_AGE:
+                calculateTeams();
+                initPlayersByAgeGroup();
+                doRandomByAge();
+                break;
         }
     }
 
@@ -53,6 +69,22 @@ public class RandomizeAction {
             else if (player.gender.equals(Gender.NONE)) {
                 throw new IllegalArgumentException("Пол участников не указан");
             }
+        }
+    }
+
+    private void initPlayersByAgeGroup() {
+        for (int i = 0; i < this.genderGroups.size(); i++) {
+            GenderGroup genderGroup = this.genderGroups.get(i);
+
+            List<Player> ageGroup = new ArrayList<>();
+            for (Player player : new ArrayList<>(allPlayers)) {
+                if (player.getAge() >= genderGroup.startAge && player.getAge() <= genderGroup.finalAge) {
+                    ageGroup.add(player);
+                    allPlayers.remove(player);
+                }
+            }
+
+            this.playersByAgeGroup.put(i, ageGroup);
         }
     }
 
@@ -126,6 +158,33 @@ public class RandomizeAction {
                         girlsList.remove(randomPlayer);
                         allPlayers.remove(randomPlayer);
                     }
+                }
+            }
+        }
+    }
+
+    private void doRandomByAge() {
+        int teamNumber = teamNumbers.size() - 1;
+
+        for (int i = this.playersByAgeGroup.size() - 1; i >= 0; i--) {
+            List<Player> players = this.playersByAgeGroup.get(i);
+
+            for (int a; players.size() != 0; teamNumber--) {
+                List<Player> playerList = finalTeams.get(teamNumber);
+                if (playerList == null || playerList.size() < teamNumbers.get(teamNumber)) {
+                    Player randomPlayer = players.get(new Random().nextInt(players.size()));
+                    players.remove(randomPlayer);
+
+                    if (playerList == null) {
+                        playerList = new ArrayList<>();
+                    }
+
+                    playerList.add(randomPlayer);
+                    finalTeams.put(teamNumber, playerList);
+                }
+
+                if (teamNumber - 1 < 0) {
+                    teamNumber = teamNumbers.size();
                 }
             }
         }

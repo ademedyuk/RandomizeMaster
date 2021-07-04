@@ -30,6 +30,8 @@ import ru.demedyuk.randomize.messages.About;
 import ru.demedyuk.randomize.messages.OutputMessages;
 import ru.demedyuk.randomize.messages.Tooltips;
 import ru.demedyuk.randomize.messages.WindowTitles;
+import ru.demedyuk.randomize.models.GenderGroup;
+import ru.demedyuk.randomize.utils.actions.RandomizeOptions;
 import ru.demedyuk.randomize.utils.file.reader.IInputFileReader;
 import ru.demedyuk.randomize.utils.file.reader.TXTInputFileReader;
 import ru.demedyuk.randomize.utils.file.reader.XLSXInputFileReader;
@@ -58,6 +60,9 @@ public class SettingsController implements IController {
     private static String pathToConfig;
     private ArrayList<String> allFontsNames = new ArrayList<String>();
     private HashMap<String, Font> allFonts = new HashMap<>();
+    private RandomizeOptions randomizeOptions = RandomizeOptions.NONE;
+
+    private HashMap<Integer, GenderGroup> genderGroups = new HashMap<>();
 
     @FXML
     void quitMenuItemActionHandler(ActionEvent event) {
@@ -79,8 +84,6 @@ public class SettingsController implements IController {
     private ChoiceBox<String> countOfPlayers = new ChoiceBox<String>();
     @FXML
     private ComboBox<String> textFont = new ComboBox<String>();
-    @FXML
-    private CheckBox isBalansing;
     @FXML
     private CheckBox usePrivatePhoto;
     @FXML
@@ -129,6 +132,18 @@ public class SettingsController implements IController {
     private ImageView playIcon;
 
     @FXML
+    private RadioButton balanceByGender;
+
+    @FXML
+    private RadioButton balanceByAge;
+
+    @FXML
+    private RadioButton balanceNotSelected;
+
+    @FXML
+    private Hyperlink editGenderGroups;
+
+    @FXML
     void fileActionHandler(ActionEvent event) {
     }
 
@@ -142,7 +157,6 @@ public class SettingsController implements IController {
         input_info.setText("");
         ouput_info.setText("");
         countOfPlayers.setValue("2 участника");
-        isBalansing.setSelected(false);
         usePrivatePhoto.setSelected(false);
         path_to_photo.setText("");
 
@@ -250,6 +264,8 @@ public class SettingsController implements IController {
                 event.consume();
         });
 
+        editGenderGroups.setVisible(false);
+
         countOfPlayers.getItems().addAll("2 участника",
                 "3 участника",
                 "4 участника",
@@ -258,7 +274,6 @@ public class SettingsController implements IController {
                 "7 участников",
                 "8 участников");
         countOfPlayers.setValue("2 участника");
-        isBalansing.setSelected(false);
         usePrivatePhoto.setSelected(false);
         label_photo.setFill(GRAY);
         teamTitle.setText("Команда");
@@ -308,7 +323,7 @@ public class SettingsController implements IController {
         input_info.setText(getPropertyIfExists(props, ConfigProperties.PLAYERS_FILE));
         ouput_info.setText(getPropertyIfExists(props, ConfigProperties.RESULT_FILE));
         countOfPlayers.setValue(getPropertyIfExists(props, ConfigProperties.TEAM_SIZE));
-        isBalansing.setSelected(getPropertyIfExists(props, ConfigProperties.USE_BALANSE).equals("true") ? true : false);
+        setAdditionalOptionsById(getPropertyIfExists(props, ConfigProperties.ADDITIONAL_OPTIONS));
 
         boolean usePhoto = getPropertyIfExists(props, ConfigProperties.USE_PHOTO).equals("true") ? true : false;
         usePrivatePhoto.setSelected(usePhoto);
@@ -528,6 +543,79 @@ public class SettingsController implements IController {
     }
 
     @FXML
+    void handleAdditionalOptions(ActionEvent event) {
+        String id = ((RadioButton) event.getSource()).getId();
+
+        setAdditionalOptionsById(id);
+    }
+
+    private void setAdditionalOptionsById(String id) {
+        balanceNotSelected.setSelected(false);
+        balanceByGender.setSelected(false);
+        balanceByAge.setSelected(false);
+        editGenderGroups.setVisible(false);
+
+        switch (id) {
+            case "balanceNotSelected":
+                balanceNotSelected.setSelected(true);
+                randomizeOptions = RandomizeOptions.NONE;
+                break;
+
+            case "balanceByGender":
+                balanceByGender.setSelected(true);
+                randomizeOptions = RandomizeOptions.BY_GENDER;
+                break;
+
+            case "balanceByAge":
+                balanceByAge.setSelected(true);
+                editGenderGroups.setVisible(true);
+                randomizeOptions = RandomizeOptions.BY_AGE;
+                break;
+        }
+    }
+
+    private String getAdditionalOptionId() {
+        if (balanceNotSelected.isSelected())
+            return "balanceNotSelected";
+
+        if (balanceByGender.isSelected())
+            return "balanceByGender";
+
+        if (balanceByAge.isSelected())
+            return "balanceByAge";
+
+        throw new UnsupportedOperationException("Ошибка определения конфигурации " + ConfigProperties.ADDITIONAL_OPTIONS.key);
+    }
+
+    public void setGenderGroups(HashMap<Integer, GenderGroup> genderGroups) {
+        this.genderGroups = genderGroups;
+    }
+
+    @FXML
+    void editGenderGroupsAction(ActionEvent event) {
+        URL locationUrl = getClass().getClassLoader().getResource("views/AgeSettingsView" + FXML);
+
+        FXMLLoader loader = new FXMLLoader(locationUrl);
+
+        Stage stage = new Stage();
+        try {
+            stage.setScene(new Scene((Pane) loader.load()));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+        stage.initModality(Modality.APPLICATION_MODAL);
+
+        AgeSettingsController ageSettingsController = loader.<AgeSettingsController>getController();
+        ageSettingsController.init(this, this.genderGroups);
+        ageSettingsController.setPrimaryStage(stage, "Выбор возрастных групп");
+
+        stage.setResizable(false);
+        stage.showAndWait();
+    }
+
+
+    @FXML
     void screenResolutionAction(ActionEvent event) {
         HashMap<RadioButton, Boolean> map = new HashMap<RadioButton, Boolean>();
         map.put(_1920x1080_button, false);
@@ -635,12 +723,15 @@ public class SettingsController implements IController {
         int teamSize = Integer.parseInt(countOfPlayers.getValue().substring(0, 1));
 
         //randomize
+        if (this.genderGroups.isEmpty()) {
+            genderGroups.put(0, new GenderGroup(6, 9));
+            genderGroups.put(1, new GenderGroup(10, 13));
+            genderGroups.put(2, new GenderGroup(14, 17));
+        }
+
         RandomizeAction randomizeAction = null;
         try {
-            randomizeAction = new RandomizeAction(
-                    inputFileReader.getAllPlayers(),
-                    teamSize,
-                    isBalansing.isSelected());
+            randomizeAction = new RandomizeAction(inputFileReader.getAllPlayers(), teamSize, this.genderGroups, this.randomizeOptions);
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
             messageField.setText(e.getMessage());
@@ -724,7 +815,7 @@ public class SettingsController implements IController {
         setPropertyIfExists(props, ConfigProperties.PLAYERS_FILE, input_info.getText());
         setPropertyIfExists(props, ConfigProperties.RESULT_FILE, ouput_info.getText());
         setPropertyIfExists(props, ConfigProperties.TEAM_SIZE, countOfPlayers.getValue());
-        setPropertyIfExists(props, ConfigProperties.USE_BALANSE, isBalansing.isSelected() ? "true" : "false");
+        setPropertyIfExists(props, ConfigProperties.ADDITIONAL_OPTIONS, getAdditionalOptionId());
         setPropertyIfExists(props, ConfigProperties.USE_PHOTO, usePrivatePhoto.isSelected() ? "true" : "false");
         setPropertyIfExists(props, ConfigProperties.PHOTO_DIRECTORY_FILE, path_to_photo.getText());
 

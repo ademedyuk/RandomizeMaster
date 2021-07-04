@@ -7,6 +7,7 @@ import ru.demedyuk.framework.Utils;
 import ru.demedyuk.randomize.models.Player;
 import ru.demedyuk.randomize.models.files.InputFileStates;
 import ru.demedyuk.randomize.utils.actions.RandomizeAction;
+import ru.demedyuk.randomize.utils.actions.RandomizeOptions;
 
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +24,7 @@ public class RandomizeActionsTests {
 
         int teamSize = 2;
 
-        RandomizeAction randomizeAction = new RandomizeAction(listOfPlayers, teamSize, false);
+        RandomizeAction randomizeAction = new RandomizeAction(listOfPlayers, teamSize, null, RandomizeOptions.NONE);
         HashMap<Integer, List<Player>> result = randomizeAction.getResult();
 
         checkResult(allPlayers, result);
@@ -38,7 +39,7 @@ public class RandomizeActionsTests {
         int teamSize = 2;
 
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            new RandomizeAction(listOfPlayers, teamSize, false);
+            new RandomizeAction(listOfPlayers, teamSize, null, RandomizeOptions.NONE);
         });
 
         Assertions.assertEquals("Общее количество игроков должно превышать выбранный размер команды",
@@ -53,7 +54,7 @@ public class RandomizeActionsTests {
 
         int teamSize = 3;
 
-        RandomizeAction randomizeAction = new RandomizeAction(listOfPlayers, teamSize, false);
+        RandomizeAction randomizeAction = new RandomizeAction(listOfPlayers, teamSize, null, RandomizeOptions.NONE);
         HashMap<Integer, List<Player>> result = randomizeAction.getResult();
 
         checkResult(allPlayers, result);
@@ -67,7 +68,7 @@ public class RandomizeActionsTests {
 
         int teamSize = 4;
 
-        RandomizeAction randomizeAction = new RandomizeAction(listOfPlayers, teamSize, false);
+        RandomizeAction randomizeAction = new RandomizeAction(listOfPlayers, teamSize, null, RandomizeOptions.NONE);
         HashMap<Integer, List<Player>> result = randomizeAction.getResult();
 
         checkResult(allPlayers, result);
@@ -82,7 +83,7 @@ public class RandomizeActionsTests {
         int teamSize = 4;
 
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            new RandomizeAction(listOfPlayers, teamSize, false);
+            new RandomizeAction(listOfPlayers, teamSize, null, RandomizeOptions.NONE);
         });
 
         Assertions.assertEquals(String.format("Невозможно разделить %s игроков на команды по %s человек(а)",
@@ -98,7 +99,7 @@ public class RandomizeActionsTests {
 
         int teamSize = 5;
 
-        RandomizeAction randomizeAction = new RandomizeAction(listOfPlayers, teamSize, false);
+        RandomizeAction randomizeAction = new RandomizeAction(listOfPlayers, teamSize, null, RandomizeOptions.NONE);
         HashMap<Integer, List<Player>> result = randomizeAction.getResult();
 
         checkResult(allPlayers, result);
@@ -113,7 +114,7 @@ public class RandomizeActionsTests {
         int teamSize = 5;
 
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            new RandomizeAction(listOfPlayers, teamSize, false);
+            new RandomizeAction(listOfPlayers, teamSize, null, RandomizeOptions.NONE);
         });
 
         Assertions.assertEquals(String.format("Невозможно разделить %s игроков на команды по %s человек(а)",
@@ -129,7 +130,7 @@ public class RandomizeActionsTests {
 
         int teamSize = 6;
 
-        RandomizeAction randomizeAction = new RandomizeAction(listOfPlayers, teamSize, false);
+        RandomizeAction randomizeAction = new RandomizeAction(listOfPlayers, teamSize, null, RandomizeOptions.NONE);
         HashMap<Integer, List<Player>> result = randomizeAction.getResult();
 
         checkResult(allPlayers, result);
@@ -144,7 +145,7 @@ public class RandomizeActionsTests {
         int teamSize = 6;
 
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            new RandomizeAction(listOfPlayers, teamSize, false);
+            new RandomizeAction(listOfPlayers, teamSize, null, RandomizeOptions.NONE);
         });
 
         Assertions.assertEquals(String.format("Невозможно разделить %s игроков на команды по %s человек(а)",
@@ -160,7 +161,7 @@ public class RandomizeActionsTests {
 
         int teamSize = 7;
 
-        RandomizeAction randomizeAction = new RandomizeAction(listOfPlayers, teamSize, false);
+        RandomizeAction randomizeAction = new RandomizeAction(listOfPlayers, teamSize, null, RandomizeOptions.NONE);
         HashMap<Integer, List<Player>> result = randomizeAction.getResult();
 
         checkResult(allPlayers, result);
@@ -175,7 +176,7 @@ public class RandomizeActionsTests {
         int teamSize = 7;
 
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            new RandomizeAction(listOfPlayers, teamSize, false);
+            new RandomizeAction(listOfPlayers, teamSize, null, RandomizeOptions.NONE);
         });
 
         Assertions.assertEquals(String.format("Невозможно разделить %s игроков на команды по %s человек(а)",
@@ -191,7 +192,7 @@ public class RandomizeActionsTests {
 
         int teamSize = 8;
 
-        RandomizeAction randomizeAction = new RandomizeAction(listOfPlayers, teamSize, false);
+        RandomizeAction randomizeAction = new RandomizeAction(listOfPlayers, teamSize, null, RandomizeOptions.NONE);
         HashMap<Integer, List<Player>> result = randomizeAction.getResult();
 
         checkResult(allPlayers, result);
@@ -206,7 +207,7 @@ public class RandomizeActionsTests {
         int teamSize = 8;
 
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            new RandomizeAction(listOfPlayers, teamSize, false);
+            new RandomizeAction(listOfPlayers, teamSize, null, RandomizeOptions.NONE);
         });
 
         Assertions.assertEquals(String.format("Невозможно разделить %s игроков на команды по %s человек(а)",

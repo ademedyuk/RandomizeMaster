@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="514.0" prefWidth="618.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.demedyuk.randomize.controllers.AgeSettingsController">
+   <children>
+      <Button fx:id="cancelButton" layoutX="494.0" layoutY="446.0" mnemonicParsing="false" onAction="#cancelButtonActionHandler" prefHeight="31.0" prefWidth="80.0" text="Cancel" />
+      <Button fx:id="okButton" layoutX="405.0" layoutY="446.0" mnemonicParsing="false" onAction="#okButtonActionHandler" prefHeight="31.0" prefWidth="80.0" text="OK" />
+      <ComboBox fx:id="age1LeftComboBox" layoutX="175.0" layoutY="93.0" onAction="#handleSelectComboBox" prefHeight="30.0" prefWidth="110.0" />
+      <ComboBox fx:id="age1RightComboBox" layoutX="328.0" layoutY="93.0" onAction="#handleSelectComboBox" prefHeight="30.0" prefWidth="110.0" />
+      <Text layoutX="302.0" layoutY="113.0" strokeType="OUTSIDE" strokeWidth="0.0" text="-" wrappingWidth="13.99658203125">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Text>
+      <Group fx:id="group2" layoutX="175.0" layoutY="136.41796875">
+         <children>
+            <ComboBox fx:id="age2LeftComboBox" layoutY="1.58203125" onAction="#handleSelectComboBox" prefHeight="30.0" prefWidth="110.0" />
+            <Text layoutX="127.0" layoutY="25.0" strokeType="OUTSIDE" strokeWidth="0.0" text="-" wrappingWidth="13.99658203125">
+               <font>
+                  <Font size="20.0" />
+               </font>
+            </Text>
+            <Text fx:id="quantity2Text" layoutX="286.0" layoutY="23.0" strokeType="OUTSIDE" strokeWidth="0.0" text="00 чел." visible="false" />
+            <ComboBox fx:id="age2RightComboBox" layoutX="153.0" layoutY="1.58203125" onAction="#handleSelectComboBox" prefHeight="30.0" prefWidth="110.0" />
+         </children>
+      </Group>
+      <Group fx:id="group3" layoutX="175.0" layoutY="181.41796875">
+         <children>
+            <Text layoutX="128.0" layoutY="25.0" strokeType="OUTSIDE" strokeWidth="0.0" text="-" wrappingWidth="13.99658203125">
+               <font>
+                  <Font size="20.0" />
+               </font>
+            </Text>
+            <Text fx:id="quantity3Text" layoutX="286.0" layoutY="25.0" strokeType="OUTSIDE" strokeWidth="0.0" text="00 чел." visible="false" />
+            <ComboBox fx:id="age3LeftComboBox" layoutY="1.58203125" onAction="#handleSelectComboBox" prefHeight="30.0" prefWidth="110.0" />
+            <ComboBox fx:id="age3RightComboBox" layoutX="153.0" layoutY="1.58203125" onAction="#handleSelectComboBox" prefHeight="30.0" prefWidth="110.0" />
+         </children>
+      </Group>
+      <Group fx:id="group4" layoutX="175.0" layoutY="226.41796875">
+         <children>
+            <Text layoutX="127.0" layoutY="25.0" strokeType="OUTSIDE" strokeWidth="0.0" text="-" wrappingWidth="13.99658203125">
+               <font>
+                  <Font size="20.0" />
+               </font>
+            </Text>
+            <Text fx:id="quantity4Text" layoutX="286.0" layoutY="22.0" strokeType="OUTSIDE" strokeWidth="0.0" text="00 чел." visible="false" />
+            <ComboBox fx:id="age4RightComboBox" layoutX="153.0" layoutY="1.58203125" onAction="#handleSelectComboBox" prefHeight="30.0" prefWidth="110.0" />
+            <ComboBox fx:id="age4LeftComboBox" layoutY="1.58203125" onAction="#handleSelectComboBox" prefHeight="30.0" prefWidth="110.0" />
+         </children>
+      </Group>
+      <Group fx:id="group5" layoutX="175.0" layoutY="271.41796875">
+         <children>
+            <Text layoutX="127.0" layoutY="25.0" strokeType="OUTSIDE" strokeWidth="0.0" text="-" wrappingWidth="13.99658203125">
+               <font>
+                  <Font size="20.0" />
+               </font>
+            </Text>
+            <Text fx:id="quantity5Text" layoutX="286.0" layoutY="25.0" strokeType="OUTSIDE" strokeWidth="0.0" text="00 чел." visible="false" />
+            <ComboBox fx:id="age5RightComboBox" layoutX="153.0" layoutY="1.58203125" onAction="#handleSelectComboBox" prefHeight="30.0" prefWidth="110.0" />
+            <ComboBox fx:id="age5LeftComboBox" layoutY="1.58203125" onAction="#handleSelectComboBox" prefHeight="30.0" prefWidth="110.0" />
+         </children>
+      </Group>
+      <Text fx:id="quantity1Text" layoutX="461.0" layoutY="113.0" strokeType="OUTSIDE" strokeWidth="0.0" text="00 чел." visible="false" />
+      <Text fx:id="num1Text" layoutX="139.0" layoutY="113.0" strokeType="OUTSIDE" strokeWidth="0.0" text="1." />
+      <Text fx:id="num2Text" layoutX="139.0" layoutY="159.0" strokeType="OUTSIDE" strokeWidth="0.0" text="2." />
+      <Text fx:id="num3Text" disable="true" layoutX="139.0" layoutY="203.0" strokeType="OUTSIDE" strokeWidth="0.0" text="3." />
+      <Text fx:id="num4Text" disable="true" layoutX="139.0" layoutY="249.0" strokeType="OUTSIDE" strokeWidth="0.0" text="4." />
+      <Text fx:id="num5Text" disable="true" layoutX="139.0" layoutY="294.0" strokeType="OUTSIDE" strokeWidth="0.0" text="5." />
+      <CheckBox fx:id="num3CheckBox" layoutX="98.0" layoutY="188.0" mnemonicParsing="false" onAction="#handleAddNewGroup" />
+      <CheckBox fx:id="num4CheckBox" disable="true" layoutX="98.0" layoutY="233.0" mnemonicParsing="false" onAction="#handleAddNewGroup" />
+      <CheckBox fx:id="num5CheckBox" disable="true" layoutX="98.0" layoutY="276.0" mnemonicParsing="false" onAction="#handleAddNewGroup" />
+      <Text layoutX="332.0" layoutY="353.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Всего игроков:" visible="false">
+         <font>
+            <Font name="System Bold" size="15.0" />
+         </font>
+      </Text>
+      <Text layoutX="461.0" layoutY="353.0" strokeType="OUTSIDE" strokeWidth="0.0" text="00" visible="false">
+         <font>
+            <Font name="System Bold" size="15.0" />
+         </font>
+      </Text>
+      <Button fx:id="clearButton" layoutX="48.0" layoutY="446.0" mnemonicParsing="false" onAction="#clearButtonActionHandler" prefHeight="31.0" prefWidth="91.0" text="Очистить" />
+      <Text fx:id="errorText" fill="#ff0101" layoutX="140.0" layoutY="429.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Текст ошибки" textAlignment="CENTER" visible="false" wrappingWidth="351.6708984375" />
+   </children>
+</Pane>
