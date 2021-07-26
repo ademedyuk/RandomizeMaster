@@ -26,6 +26,7 @@ import ru.demedyuk.randomize.configuration.screen.Screen;
 import ru.demedyuk.randomize.constants.FileExtensions;
 import ru.demedyuk.randomize.constants.Fonts;
 import ru.demedyuk.randomize.constants.Paths;
+import ru.demedyuk.randomize.exceptions.EmptyRowException;
 import ru.demedyuk.randomize.messages.About;
 import ru.demedyuk.randomize.messages.OutputMessages;
 import ru.demedyuk.randomize.messages.Tooltips;
@@ -710,7 +711,7 @@ public class SettingsController implements IController {
         IInputFileReader inputFileReader = null;
         try {
             inputFileReader = initPlayers();
-        } catch (IllegalArgumentException e) {
+        } catch (RuntimeException | EmptyRowException e) {
             e.printStackTrace();
             messageField.setText(e.getMessage());
             return;
@@ -783,7 +784,7 @@ public class SettingsController implements IController {
         updateScene(appStage);
     }
 
-    public IInputFileReader initPlayers() {
+    public IInputFileReader initPlayers() throws EmptyRowException {
         IInputFileReader inputFileReader = null;
 
         String inputFilePath = input_info.getText();
@@ -798,7 +799,8 @@ public class SettingsController implements IController {
 
         try {
             inputFileReader.readFile();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
 

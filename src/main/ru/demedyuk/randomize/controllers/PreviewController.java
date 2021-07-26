@@ -523,9 +523,13 @@ public class PreviewController implements IController {
     }
 
     private Image getPhoto(Player player) {
+        if (!player.genderIsExists()) {
+            if (!photoExists(pathToPhoto + "//" + player.name).equals("")) {
+                return new Image(Paths.FILE + pathToPhoto + "//" + player.name);
+            }
 
-        if (!player.genderIsExists())
             return new Image(getClass().getClassLoader().getResourceAsStream(IMAGES + NO_GENDER));
+        }
 
         String urlPhotoByName = photoExists(pathToPhoto + "//" + player.name);
         String urlPhotoByNum = photoExists(pathToPhoto + "//" + player.number);
